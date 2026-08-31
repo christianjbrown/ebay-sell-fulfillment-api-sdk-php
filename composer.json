@@ -1,0 +1,85 @@
+{
+    "name": "christianjbrown/ebay-sell-fulfillment-api-sdk",
+    "description": "A strongly-typed PHP 8.5+ client for the eBay Sell Fulfillment API that returns typed model objects instead of raw arrays.",
+    "type": "library",
+    "license": "MIT",
+    "keywords": [
+        "ebay",
+        "api",
+        "client",
+        "ecommerce",
+        "fulfillment"
+    ],
+    "authors": [
+        {
+            "name": "Christian Brown"
+        }
+    ],
+    "require": {
+        "php": "^8.5",
+        "christianjbrown/api-client": "dev-main",
+        "christianjbrown/key-value-store": "dev-main",
+        "christianjbrown/oauth2-client": "dev-main",
+        "psr/container": "^2.0",
+        "symfony/dependency-injection": "^8.0"
+    },
+    "require-dev": {
+        "christianjbrown/code-quality-scripts": "dev-main",
+        "phpstan/phpstan": "^2.0",
+        "phpunit/phpunit": "^13.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "ChristianBrown\\EBay\\SellFulfillment\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "ChristianBrown\\EBay\\SellFulfillment\\Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "test": [
+            "clear && XDEBUG_MODE=coverage php -d memory_limit=-1 ./bin/phpunit && open ./.phpunit.cache/code-coverage-html/index.html"
+        ],
+        "stan": [
+            "clear && ./bin/phpstan analyse"
+        ],
+        "check-style": [
+            "clear && ./bin/php-cs ./src ./tests"
+        ],
+        "check-style-diff": [
+            "clear && ./bin/php-cs-diff"
+        ],
+        "fix-style": [
+            "clear && ./bin/php-cs-fix ./src ./tests"
+        ],
+        "fix-style-diff": [
+            "clear && ./bin/php-cs-fix-diff"
+        ]
+    },
+    "config": {
+        "bin-dir": "bin",
+        "allow-plugins": {
+            "dealerdirect/phpcodesniffer-composer-installer": true
+        }
+    },
+    "repositories": [
+        {
+            "type": "github",
+            "url": "git@github.com:christianjbrown/api-client-php.git"
+        },
+        {
+            "type": "github",
+            "url": "git@github.com:christianjbrown/code-quality-scripts-php.git"
+        },
+        {
+            "type": "github",
+            "url": "git@github.com:christianjbrown/key-value-store-php.git"
+        },
+        {
+            "type": "github",
+            "url": "git@github.com:christianjbrown/oauth2-client-php.git"
+        }
+    ]
+}
