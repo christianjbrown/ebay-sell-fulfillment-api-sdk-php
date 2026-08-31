@@ -23,11 +23,6 @@ interface PaymentDisputeApiInterface extends ApiInterface
     public const string API_URL_CONTEST_SPRINTF = 'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/%s/contest';
     public const string API_URL_PAYMENT_DISPUTE_SPRINTF = 'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/%s';
     public const string API_URL_PAYMENT_DISPUTE_SUMMARY = 'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute_summary';
-    /**
-     * eBay's own ceiling on, and default for, `limit` on `getPaymentDisputeSummaries`.
-     */
-    public const int MAX_LIMIT = 200;
-
     public const int DEFAULT_LIMIT = 200;
     public const string KEY_BUYER_USERNAME = 'buyer_username';
     public const string KEY_LIMIT = 'limit';
@@ -36,6 +31,11 @@ interface PaymentDisputeApiInterface extends ApiInterface
     public const string KEY_OPEN_DATE_TO = 'open_date_to';
     public const string KEY_ORDER_ID = 'order_id';
     public const string KEY_PAYMENT_DISPUTE_STATUS = 'payment_dispute_status';
+
+    /**
+     * eBay's own ceiling on, and default for, `limit` on `getPaymentDisputeSummaries`.
+     */
+    public const int MAX_LIMIT = 200;
     public const string PAYMENT_DISPUTE_STATUS_ACTION_NEEDED = 'ACTION_NEEDED';
     public const string PAYMENT_DISPUTE_STATUS_CLOSED = 'CLOSED';
     public const string PAYMENT_DISPUTE_STATUS_OPEN = 'OPEN';

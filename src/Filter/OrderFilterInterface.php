@@ -59,9 +59,9 @@ interface OrderFilterInterface
      * `creationdate:[2026-01-01T00:00:00.000Z..],orderfulfillmentstatus:{NOT_STARTED|IN_PROGRESS}`.
      * Returns an empty string when nothing has been set.
      *
-     * eBay documents only two supported fulfillment-status combinations —
-     * `{NOT_STARTED|IN_PROGRESS}` and `{FULFILLED|IN_PROGRESS}` — and ignores
-     * `lastmodifieddate` whenever `creationdate` is also set.
+     * Note that eBay documents only two supported fulfillment-status
+     * combinations, `{NOT_STARTED|IN_PROGRESS}` and `{FULFILLED|IN_PROGRESS}`,
+     * and ignores `lastmodifieddate` whenever `creationdate` is also set.
      */
     public function toFilterString(): string;
 }
