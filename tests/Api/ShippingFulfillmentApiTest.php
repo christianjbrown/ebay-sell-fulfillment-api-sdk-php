@@ -88,8 +88,11 @@ final class ShippingFulfillmentApiTest extends TestCase
 
         $api = self::buildApi($requestSender, null, null, $transformer);
 
-        self::assertSame($fulfillment, $api->getShippingFulfillment(self::ORDER_ID, self::FULFILLMENT_ID, true));
-        self::assertSame($fulfillment, $api->getShippingFulfillment(self::ORDER_ID, self::FULFILLMENT_ID, true));
+        $first = $api->getShippingFulfillment(self::ORDER_ID, self::FULFILLMENT_ID, true);
+        $second = $api->getShippingFulfillment(self::ORDER_ID, self::FULFILLMENT_ID, true);
+
+        self::assertSame($fulfillment, $first);
+        self::assertSame($fulfillment, $second);
     }
 
     public function testGetShippingFulfillmentSkipCacheThrowsWhenResponseEmpty(): void
@@ -139,8 +142,11 @@ final class ShippingFulfillmentApiTest extends TestCase
 
         $api = self::buildApi($requestSender, null, null, null, $collectionTransformer);
 
-        self::assertSame($collection, $api->getShippingFulfillments(self::ORDER_ID, true));
-        self::assertSame($collection, $api->getShippingFulfillments(self::ORDER_ID, true));
+        $first = $api->getShippingFulfillments(self::ORDER_ID, true);
+        $second = $api->getShippingFulfillments(self::ORDER_ID, true);
+
+        self::assertSame($collection, $first);
+        self::assertSame($collection, $second);
     }
 
     public function testGetShippingFulfillmentsSkipCacheThrowsWhenResponseEmpty(): void
@@ -181,8 +187,11 @@ final class ShippingFulfillmentApiTest extends TestCase
 
         $api = self::buildApi($requestSender, null, null, null, $collectionTransformer);
 
-        self::assertSame($collection, $api->getShippingFulfillments(self::ORDER_ID));
-        self::assertSame($collection, $api->getShippingFulfillments(self::ORDER_ID));
+        $first = $api->getShippingFulfillments(self::ORDER_ID);
+        $second = $api->getShippingFulfillments(self::ORDER_ID);
+
+        self::assertSame($collection, $first);
+        self::assertSame($collection, $second);
     }
 
     public function testGetShippingFulfillmentThrowsWhenResponseEmpty(): void
@@ -210,8 +219,11 @@ final class ShippingFulfillmentApiTest extends TestCase
 
         $api = self::buildApi($requestSender, null, null, $transformer);
 
-        self::assertSame($fulfillment, $api->getShippingFulfillment(self::ORDER_ID, self::FULFILLMENT_ID));
-        self::assertSame($fulfillment, $api->getShippingFulfillment(self::ORDER_ID, self::FULFILLMENT_ID));
+        $first = $api->getShippingFulfillment(self::ORDER_ID, self::FULFILLMENT_ID);
+        $second = $api->getShippingFulfillment(self::ORDER_ID, self::FULFILLMENT_ID);
+
+        self::assertSame($fulfillment, $first);
+        self::assertSame($fulfillment, $second);
     }
 
     private static function buildApi(?JsonApiRequestSenderInterface $requestSender = null, ?ApiRequestSenderInterface $apiRequestSender = null, ?ArrayToJsonTransformerInterface $arrayToJsonTransformer = null, ?ShippingFulfillmentTransformerInterface $transformer = null, ?ShippingFulfillmentPagedCollectionTransformerInterface $collectionTransformer = null, ?ShippingFulfillmentDetailsSerializerInterface $serializer = null): ShippingFulfillmentApi

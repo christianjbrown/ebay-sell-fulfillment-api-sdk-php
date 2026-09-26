@@ -110,8 +110,11 @@ final class PaymentDisputeApiTest extends TestCase
 
         $api = self::buildReadApi($requestSender, null, $transformer);
 
-        self::assertSame($history, $api->getActivities(self::DISPUTE_ID, true));
-        self::assertSame($history, $api->getActivities(self::DISPUTE_ID, true));
+        $first = $api->getActivities(self::DISPUTE_ID, true);
+        $second = $api->getActivities(self::DISPUTE_ID, true);
+
+        self::assertSame($history, $first);
+        self::assertSame($history, $second);
     }
 
     public function testGetActivitiesSkipCacheThrowsWhenResponseEmpty(): void
@@ -146,8 +149,11 @@ final class PaymentDisputeApiTest extends TestCase
 
         $api = self::buildReadApi($requestSender, null, $transformer);
 
-        self::assertSame($history, $api->getActivities(self::DISPUTE_ID));
-        self::assertSame($history, $api->getActivities(self::DISPUTE_ID));
+        $first = $api->getActivities(self::DISPUTE_ID);
+        $second = $api->getActivities(self::DISPUTE_ID);
+
+        self::assertSame($history, $first);
+        self::assertSame($history, $second);
     }
 
     public function testGetPaymentDisputeReturnsDispute(): void
@@ -180,8 +186,11 @@ final class PaymentDisputeApiTest extends TestCase
 
         $api = self::buildReadApi($requestSender, $transformer);
 
-        self::assertSame($dispute, $api->getPaymentDispute(self::DISPUTE_ID, true));
-        self::assertSame($dispute, $api->getPaymentDispute(self::DISPUTE_ID, true));
+        $first = $api->getPaymentDispute(self::DISPUTE_ID, true);
+        $second = $api->getPaymentDispute(self::DISPUTE_ID, true);
+
+        self::assertSame($dispute, $first);
+        self::assertSame($dispute, $second);
     }
 
     public function testGetPaymentDisputeSkipCacheThrowsWhenResponseEmpty(): void
@@ -246,8 +255,11 @@ final class PaymentDisputeApiTest extends TestCase
 
         $api = self::buildReadApi($requestSender, null, null, $transformer);
 
-        self::assertSame($summaries, $api->getPaymentDisputeSummaries(null, null, null, null, null, PaymentDisputeApiInterface::DEFAULT_LIMIT, 0, true));
-        self::assertSame($summaries, $api->getPaymentDisputeSummaries(null, null, null, null, null, PaymentDisputeApiInterface::DEFAULT_LIMIT, 0, true));
+        $first = $api->getPaymentDisputeSummaries(null, null, null, null, null, PaymentDisputeApiInterface::DEFAULT_LIMIT, 0, true);
+        $second = $api->getPaymentDisputeSummaries(null, null, null, null, null, PaymentDisputeApiInterface::DEFAULT_LIMIT, 0, true);
+
+        self::assertSame($summaries, $first);
+        self::assertSame($summaries, $second);
     }
 
     public function testGetPaymentDisputeSummariesSkipCacheThrowsWhenResponseEmpty(): void
@@ -291,8 +303,11 @@ final class PaymentDisputeApiTest extends TestCase
 
         $api = self::buildReadApi($requestSender, null, null, $transformer);
 
-        self::assertSame($summaries, $api->getPaymentDisputeSummaries());
-        self::assertSame($summaries, $api->getPaymentDisputeSummaries());
+        $first = $api->getPaymentDisputeSummaries();
+        $second = $api->getPaymentDisputeSummaries();
+
+        self::assertSame($summaries, $first);
+        self::assertSame($summaries, $second);
     }
 
     public function testGetPaymentDisputeThrowsWhenResponseEmpty(): void
@@ -317,8 +332,11 @@ final class PaymentDisputeApiTest extends TestCase
 
         $api = self::buildReadApi($requestSender, $transformer);
 
-        self::assertSame($dispute, $api->getPaymentDispute(self::DISPUTE_ID));
-        self::assertSame($dispute, $api->getPaymentDispute(self::DISPUTE_ID));
+        $first = $api->getPaymentDispute(self::DISPUTE_ID);
+        $second = $api->getPaymentDispute(self::DISPUTE_ID);
+
+        self::assertSame($dispute, $first);
+        self::assertSame($dispute, $second);
     }
 
     private static function buildReadApi(?JsonApiRequestSenderInterface $requestSender = null, ?PaymentDisputeTransformerInterface $paymentDisputeTransformer = null, ?PaymentDisputeActivityHistoryTransformerInterface $activityHistoryTransformer = null, ?DisputeSummaryResponseTransformerInterface $summaryTransformer = null): PaymentDisputeApi
