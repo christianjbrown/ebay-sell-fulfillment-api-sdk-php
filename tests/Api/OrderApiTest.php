@@ -65,8 +65,11 @@ final class OrderApiTest extends TestCase
 
         $api = self::buildApi($requestSender, $orderTransformer);
 
-        self::assertSame($order, $api->getOrder(self::ORDER_ID, null, true));
-        self::assertSame($order, $api->getOrder(self::ORDER_ID, null, true));
+        $first = $api->getOrder(self::ORDER_ID, null, true);
+        $second = $api->getOrder(self::ORDER_ID, null, true);
+
+        self::assertSame($order, $first);
+        self::assertSame($order, $second);
     }
 
     public function testGetOrderSkipCacheThrowsWhenResponseEmpty(): void
@@ -126,8 +129,11 @@ final class OrderApiTest extends TestCase
 
         $api = self::buildApi($requestSender, self::createStub(OrderTransformerInterface::class), $collectionTransformer);
 
-        self::assertSame($collection, $api->getOrders(null, null, null, OrderApiInterface::DEFAULT_LIMIT, 0, true));
-        self::assertSame($collection, $api->getOrders(null, null, null, OrderApiInterface::DEFAULT_LIMIT, 0, true));
+        $first = $api->getOrders(null, null, null, OrderApiInterface::DEFAULT_LIMIT, 0, true);
+        $second = $api->getOrders(null, null, null, OrderApiInterface::DEFAULT_LIMIT, 0, true);
+
+        self::assertSame($collection, $first);
+        self::assertSame($collection, $second);
     }
 
     public function testGetOrdersSkipCacheThrowsWhenResponseEmpty(): void
@@ -177,8 +183,11 @@ final class OrderApiTest extends TestCase
 
         $api = self::buildApi($requestSender, self::createStub(OrderTransformerInterface::class), $collectionTransformer);
 
-        self::assertSame($collection, $api->getOrders());
-        self::assertSame($collection, $api->getOrders());
+        $first = $api->getOrders();
+        $second = $api->getOrders();
+
+        self::assertSame($collection, $first);
+        self::assertSame($collection, $second);
     }
 
     public function testGetOrderThrowsWhenResponseEmpty(): void
@@ -206,8 +215,11 @@ final class OrderApiTest extends TestCase
 
         $api = self::buildApi($requestSender, $orderTransformer);
 
-        self::assertSame($order, $api->getOrder(self::ORDER_ID));
-        self::assertSame($order, $api->getOrder(self::ORDER_ID));
+        $first = $api->getOrder(self::ORDER_ID);
+        $second = $api->getOrder(self::ORDER_ID);
+
+        self::assertSame($order, $first);
+        self::assertSame($order, $second);
     }
 
     public function testIssueRefundReturnsRefund(): void
