@@ -8,7 +8,7 @@ what's here and from its sibling libraries (`etsy-open-api-sdk`, `smartthings-ap
 ## What this is
 
 A strongly-typed PHP 8.5+ client for the [eBay Sell Fulfillment API](https://developer.ebay.com/api-docs/sell/fulfillment/overview.html),
-built against eBay's published OpenAPI contract (`sell_fulfillment` **v1.20.0**). It wraps every
+built against eBay's published OpenAPI contract (`sell_fulfillment` **v1.20.6**). It wraps every
 method of the API — the `order`, `shipping_fulfillment`, `payment_dispute` and
 `payment_dispute_summary` resources — returning typed model objects instead of raw arrays. The
 primary entry point is the `SellFulfillment` facade (`src/SellFulfillment.php`), which wires the
