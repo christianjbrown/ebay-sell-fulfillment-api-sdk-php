@@ -6,7 +6,7 @@ A strongly-typed PHP client for the [eBay Sell Fulfillment API](https://develope
 
 `getOrders` returns roughly **two years** of order history, which makes it the practical way to reconstruct lifetime sold counts per listing: every `LineItem` carries its `legacyItemId`, `lineItemId`, `sku`, `quantity`, `title` and `lineItemCost`, so aggregating `quantity` by `legacyItemId` gives a sold count that survives the listing ending.
 
-> :warning: **This SDK has not yet been exercised against live eBay traffic.** It is built strictly to eBay's published OpenAPI contract (`sell_fulfillment` v1.20.0). See [Unverified against live traffic](#unverified-against-live-traffic) for what to smoke-test first once a refresh token exists.
+> :warning: **Only `getOrders` has been exercised against live eBay traffic.** The rest is built strictly to eBay's published OpenAPI contract (`sell_fulfillment` v1.20.0). See [Live traffic](#live-traffic) for what has been confirmed and what to smoke-test next.
 
 ### Supported endpoints
 
@@ -179,15 +179,16 @@ $request = (new AddEvidencePaymentDisputeRequest())
 $evidence = $evidenceApi->addEvidence('5000005000', $request);
 ```
 
-### Unverified against live traffic
+### Live traffic
 
-Nothing here has been run against a real eBay account yet, because minting the first refresh token needs a browser consent flow the account owner has to complete. Once a token exists, smoke-test in this order — these are the calls whose contract detail is most likely to bite:
+**`getOrders`** runs against a real seller account: the `creationdate:[…..…]` filter, `limit`/`offset` paging, and `lineItems[].legacyItemId` and `lineItems[].quantity` all behave as documented, and eBay accepts the `:` and `,` that `http_build_query` percent-encodes. One thing the documentation does not say: a `creationdate` lower bound older than eBay's roughly two-year retention is rejected with errorId `30830` rather than quietly clamped, so keep the window inside it.
 
-1. **`getOrders`** — the `filter` query-string syntax (`creationdate:[…..…]`, `orderfulfillmentstatus:{A|B}`) and the `limit`/`offset` paging, and that `lineItems[].legacyItemId` and `lineItems[].quantity` are populated. eBay's own example percent-encodes only `[`, `]`, `{`, `}` and `|`, whereas `http_build_query` (used by `christianjbrown/api-client`) also encodes `:` and `,`; that is valid URL encoding, but it is the single most likely thing to need adjusting.
-2. **`getOrder`** — the `fieldGroups=TAX_BREAKDOWN` variant.
-3. **`createShippingFulfillment`** — that the `201`/empty body is handled and the payload shape is accepted.
-4. **`uploadEvidenceFile`** — the hand-built `multipart/form-data` body (field name `file`), which is the only request this SDK does not encode as JSON.
-5. **`fetchEvidenceContent`** — that the raw `application/octet-stream` body comes back intact.
+Nothing else has been run against a real account yet. Smoke-test in this order, since these are the calls whose contract detail is most likely to bite:
+
+1. **`getOrder`** — the `fieldGroups=TAX_BREAKDOWN` variant.
+2. **`createShippingFulfillment`** — that the `201`/empty body is handled and the payload shape is accepted.
+3. **`uploadEvidenceFile`** — the hand-built `multipart/form-data` body (field name `file`), which is the only request this SDK does not encode as JSON.
+4. **`fetchEvidenceContent`** — that the raw `application/octet-stream` body comes back intact.
 
 Payment dispute calls are served from `apiz.ebay.com`; order and fulfillment calls from `api.ebay.com`. Both hosts are baked into the `API_URL*` constants on the client interfaces.
 

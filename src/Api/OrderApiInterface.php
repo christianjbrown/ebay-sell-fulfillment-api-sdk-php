@@ -52,8 +52,8 @@ interface OrderApiInterface extends ApiInterface
 
     /**
      * Reads one page of the seller's orders. eBay retains roughly two years of
-     * order history, so a `creationdate` filter reaching back further than that
-     * returns nothing extra. Drive the pages with the returned collection's
+     * order history, and rejects a `creationdate` lower bound older than that
+     * with errorId 30830. Drive the pages with the returned collection's
      * `getTotal()`, `getLimit()`, `getOffset()` and `getNext()`.
      *
      * @param null|string $filter      The `filter` query-string value, for example from `OrderFilterInterface::toFilterString()`
