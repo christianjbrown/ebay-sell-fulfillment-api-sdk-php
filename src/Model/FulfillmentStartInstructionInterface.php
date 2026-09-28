@@ -6,6 +6,10 @@ namespace ChristianBrown\EBay\SellFulfillment\Model;
 
 interface FulfillmentStartInstructionInterface
 {
+    public function getAppointment(): ?AppointmentDetailsInterface;
+
+    public function getDestinationTimeZone(): ?string;
+
     public function getEbaySupportedFulfillment(): ?bool;
 
     public function getFinalDestinationAddress(): ?AddressInterface;
@@ -19,6 +23,10 @@ interface FulfillmentStartInstructionInterface
     public function getPickupStep(): ?PickupStepInterface;
 
     public function getShippingStep(): ?ShippingStepInterface;
+
+    public function setAppointment(?AppointmentDetailsInterface $value): self;
+
+    public function setDestinationTimeZone(?string $value): self;
 
     public function setEbaySupportedFulfillment(?bool $value): self;
 

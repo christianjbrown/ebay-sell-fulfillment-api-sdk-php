@@ -6,6 +6,8 @@ namespace ChristianBrown\EBay\SellFulfillment\Model;
 
 final class FulfillmentStartInstruction implements FulfillmentStartInstructionInterface
 {
+    private ?AppointmentDetailsInterface $appointment = null;
+    private ?string $destinationTimeZone = null;
     private ?bool $ebaySupportedFulfillment = null;
     private ?AddressInterface $finalDestinationAddress = null;
     private ?string $fulfillmentInstructionsType = null;
@@ -13,6 +15,16 @@ final class FulfillmentStartInstruction implements FulfillmentStartInstructionIn
     private ?string $minEstimatedDeliveryDate = null;
     private ?PickupStepInterface $pickupStep = null;
     private ?ShippingStepInterface $shippingStep = null;
+
+    public function getAppointment(): ?AppointmentDetailsInterface
+    {
+        return $this->appointment;
+    }
+
+    public function getDestinationTimeZone(): ?string
+    {
+        return $this->destinationTimeZone;
+    }
 
     public function getEbaySupportedFulfillment(): ?bool
     {
@@ -47,6 +59,20 @@ final class FulfillmentStartInstruction implements FulfillmentStartInstructionIn
     public function getShippingStep(): ?ShippingStepInterface
     {
         return $this->shippingStep;
+    }
+
+    public function setAppointment(?AppointmentDetailsInterface $value): FulfillmentStartInstructionInterface
+    {
+        $this->appointment = $value;
+
+        return $this;
+    }
+
+    public function setDestinationTimeZone(?string $value): FulfillmentStartInstructionInterface
+    {
+        $this->destinationTimeZone = $value;
+
+        return $this;
     }
 
     public function setEbaySupportedFulfillment(?bool $value): FulfillmentStartInstructionInterface
