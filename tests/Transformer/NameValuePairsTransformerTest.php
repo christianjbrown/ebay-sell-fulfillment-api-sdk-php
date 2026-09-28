@@ -6,6 +6,7 @@ namespace ChristianBrown\EBay\SellFulfillment\Tests\Transformer;
 
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Model\NameValuePairInterface;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuardInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\NameValuePairsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\NameValuePairsTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\NameValuePairTransformerInterface;
@@ -33,25 +34,36 @@ final class NameValuePairsTransformerTest extends TestCase
                 ]
             );
 
-        $transformer = new NameValuePairsTransformer($nameValuePairTransformer);
+        $transformer = new NameValuePairsTransformer($nameValuePairTransformer, self::passingArrayShapeGuard());
 
         self::assertSame([$first, $second], $transformer->transform($data));
     }
 
     public function testTransformEmpty(): void
     {
-        $transformer = new NameValuePairsTransformer(self::createStub(NameValuePairTransformerInterface::class));
+        $transformer = new NameValuePairsTransformer(self::createStub(NameValuePairTransformerInterface::class), self::passingArrayShapeGuard());
 
         self::assertSame([], $transformer->transform([]));
     }
 
     public function testTransformThrowsOnNonArrayElement(): void
     {
-        $transformer = new NameValuePairsTransformer(self::createStub(NameValuePairTransformerInterface::class));
+        $exception = new UnexpectedResponseException(sprintf(NameValuePairsTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, NameValuePairsTransformerInterface::ARRAY_NAME));
+
+        $arrayShapeGuard = self::createMock(ArrayShapeGuardInterface::class);
+        $arrayShapeGuard->expects(self::once())->method('assertArray')
+            ->with('not-an-array', NameValuePairsTransformerInterface::ARRAY_NAME)
+            ->willThrowException($exception);
+
+        $transformer = new NameValuePairsTransformer(self::createStub(NameValuePairTransformerInterface::class), $arrayShapeGuard);
 
         $this->expectException(UnexpectedResponseException::class);
-        $this->expectExceptionMessage(sprintf(NameValuePairsTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, NameValuePairsTransformerInterface::ARRAY_NAME));
 
         $transformer->transform(['not-an-array']);
+    }
+
+    private static function passingArrayShapeGuard(): ArrayShapeGuardInterface
+    {
+        return self::createStub(ArrayShapeGuardInterface::class);
     }
 }

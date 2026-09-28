@@ -6,6 +6,7 @@ namespace ChristianBrown\EBay\SellFulfillment\Tests\Transformer;
 
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Model\LineItemRefundInterface;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuardInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\LineItemRefundsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\LineItemRefundsTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\LineItemRefundTransformerInterface;
@@ -33,25 +34,36 @@ final class LineItemRefundsTransformerTest extends TestCase
                 ]
             );
 
-        $transformer = new LineItemRefundsTransformer($lineItemRefundTransformer);
+        $transformer = new LineItemRefundsTransformer($lineItemRefundTransformer, self::passingArrayShapeGuard());
 
         self::assertSame([$first, $second], $transformer->transform($data));
     }
 
     public function testTransformEmpty(): void
     {
-        $transformer = new LineItemRefundsTransformer(self::createStub(LineItemRefundTransformerInterface::class));
+        $transformer = new LineItemRefundsTransformer(self::createStub(LineItemRefundTransformerInterface::class), self::passingArrayShapeGuard());
 
         self::assertSame([], $transformer->transform([]));
     }
 
     public function testTransformThrowsOnNonArrayElement(): void
     {
-        $transformer = new LineItemRefundsTransformer(self::createStub(LineItemRefundTransformerInterface::class));
+        $exception = new UnexpectedResponseException(sprintf(LineItemRefundsTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, LineItemRefundsTransformerInterface::ARRAY_NAME));
+
+        $arrayShapeGuard = self::createMock(ArrayShapeGuardInterface::class);
+        $arrayShapeGuard->expects(self::once())->method('assertArray')
+            ->with('not-an-array', LineItemRefundsTransformerInterface::ARRAY_NAME)
+            ->willThrowException($exception);
+
+        $transformer = new LineItemRefundsTransformer(self::createStub(LineItemRefundTransformerInterface::class), $arrayShapeGuard);
 
         $this->expectException(UnexpectedResponseException::class);
-        $this->expectExceptionMessage(sprintf(LineItemRefundsTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, LineItemRefundsTransformerInterface::ARRAY_NAME));
 
         $transformer->transform(['not-an-array']);
+    }
+
+    private static function passingArrayShapeGuard(): ArrayShapeGuardInterface
+    {
+        return self::createStub(ArrayShapeGuardInterface::class);
     }
 }

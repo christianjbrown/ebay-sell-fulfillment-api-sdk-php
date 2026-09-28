@@ -6,6 +6,7 @@ namespace ChristianBrown\EBay\SellFulfillment\Tests\Transformer;
 
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Model\DisputeEvidenceInterface;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuardInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\DisputeEvidencesTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\DisputeEvidencesTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\DisputeEvidenceTransformerInterface;
@@ -33,25 +34,36 @@ final class DisputeEvidencesTransformerTest extends TestCase
                 ]
             );
 
-        $transformer = new DisputeEvidencesTransformer($disputeEvidenceTransformer);
+        $transformer = new DisputeEvidencesTransformer($disputeEvidenceTransformer, self::passingArrayShapeGuard());
 
         self::assertSame([$first, $second], $transformer->transform($data));
     }
 
     public function testTransformEmpty(): void
     {
-        $transformer = new DisputeEvidencesTransformer(self::createStub(DisputeEvidenceTransformerInterface::class));
+        $transformer = new DisputeEvidencesTransformer(self::createStub(DisputeEvidenceTransformerInterface::class), self::passingArrayShapeGuard());
 
         self::assertSame([], $transformer->transform([]));
     }
 
     public function testTransformThrowsOnNonArrayElement(): void
     {
-        $transformer = new DisputeEvidencesTransformer(self::createStub(DisputeEvidenceTransformerInterface::class));
+        $exception = new UnexpectedResponseException(sprintf(DisputeEvidencesTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, DisputeEvidencesTransformerInterface::ARRAY_NAME));
+
+        $arrayShapeGuard = self::createMock(ArrayShapeGuardInterface::class);
+        $arrayShapeGuard->expects(self::once())->method('assertArray')
+            ->with('not-an-array', DisputeEvidencesTransformerInterface::ARRAY_NAME)
+            ->willThrowException($exception);
+
+        $transformer = new DisputeEvidencesTransformer(self::createStub(DisputeEvidenceTransformerInterface::class), $arrayShapeGuard);
 
         $this->expectException(UnexpectedResponseException::class);
-        $this->expectExceptionMessage(sprintf(DisputeEvidencesTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, DisputeEvidencesTransformerInterface::ARRAY_NAME));
 
         $transformer->transform(['not-an-array']);
+    }
+
+    private static function passingArrayShapeGuard(): ArrayShapeGuardInterface
+    {
+        return self::createStub(ArrayShapeGuardInterface::class);
     }
 }

@@ -26,6 +26,7 @@ interface SellFulfillmentInterface
     public const string SERVICE_API_REQUEST_SENDER = 'ebay_sell_fulfillment.api_request_sender';
     public const string SERVICE_APPLIED_PROMOTION_TRANSFORMER = 'ebay_sell_fulfillment.transformer.applied_promotion_transformer';
     public const string SERVICE_APPLIED_PROMOTIONS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.applied_promotions_transformer';
+    public const string SERVICE_ARRAY_SHAPE_GUARD = 'ebay_sell_fulfillment.transformer.array_shape_guard';
     public const string SERVICE_ARRAY_TO_JSON_TRANSFORMER = 'ebay_sell_fulfillment.array_to_json_transformer';
     public const string SERVICE_BUYER_TRANSFORMER = 'ebay_sell_fulfillment.transformer.buyer_transformer';
     public const string SERVICE_CANCEL_REQUEST_TRANSFORMER = 'ebay_sell_fulfillment.transformer.cancel_request_transformer';

@@ -6,6 +6,7 @@ namespace ChristianBrown\EBay\SellFulfillment\Tests\Transformer;
 
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Model\CancelRequestInterface;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuardInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelRequestsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelRequestsTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelRequestTransformerInterface;
@@ -33,25 +34,36 @@ final class CancelRequestsTransformerTest extends TestCase
                 ]
             );
 
-        $transformer = new CancelRequestsTransformer($cancelRequestTransformer);
+        $transformer = new CancelRequestsTransformer($cancelRequestTransformer, self::passingArrayShapeGuard());
 
         self::assertSame([$first, $second], $transformer->transform($data));
     }
 
     public function testTransformEmpty(): void
     {
-        $transformer = new CancelRequestsTransformer(self::createStub(CancelRequestTransformerInterface::class));
+        $transformer = new CancelRequestsTransformer(self::createStub(CancelRequestTransformerInterface::class), self::passingArrayShapeGuard());
 
         self::assertSame([], $transformer->transform([]));
     }
 
     public function testTransformThrowsOnNonArrayElement(): void
     {
-        $transformer = new CancelRequestsTransformer(self::createStub(CancelRequestTransformerInterface::class));
+        $exception = new UnexpectedResponseException(sprintf(CancelRequestsTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, CancelRequestsTransformerInterface::ARRAY_NAME));
+
+        $arrayShapeGuard = self::createMock(ArrayShapeGuardInterface::class);
+        $arrayShapeGuard->expects(self::once())->method('assertArray')
+            ->with('not-an-array', CancelRequestsTransformerInterface::ARRAY_NAME)
+            ->willThrowException($exception);
+
+        $transformer = new CancelRequestsTransformer(self::createStub(CancelRequestTransformerInterface::class), $arrayShapeGuard);
 
         $this->expectException(UnexpectedResponseException::class);
-        $this->expectExceptionMessage(sprintf(CancelRequestsTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, CancelRequestsTransformerInterface::ARRAY_NAME));
 
         $transformer->transform(['not-an-array']);
+    }
+
+    private static function passingArrayShapeGuard(): ArrayShapeGuardInterface
+    {
+        return self::createStub(ArrayShapeGuardInterface::class);
     }
 }

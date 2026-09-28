@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace ChristianBrown\EBay\SellFulfillment\Transformer;
 
-use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Model\TaxInterface;
 
 use function array_values;
 use function count;
-use function is_array;
-use function sprintf;
 
 final class TaxesTransformer implements TaxesTransformerInterface
 {
+    private ArrayShapeGuardInterface $arrayShapeGuard;
     private TaxTransformerInterface $taxTransformer;
 
-    public function __construct(TaxTransformerInterface $taxTransformer)
+    public function __construct(TaxTransformerInterface $taxTransformer, ArrayShapeGuardInterface $arrayShapeGuard)
     {
         $this->taxTransformer = $taxTransformer;
+        $this->arrayShapeGuard = $arrayShapeGuard;
     }
 
     /**
@@ -32,9 +31,7 @@ final class TaxesTransformer implements TaxesTransformerInterface
         $values = array_values($data);
         for ($i = 0, $count = count($values); $i < $count; ++$i) {
             $value = $values[$i];
-            if (!is_array($value)) {
-                throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_ARRAY_SPRINTF, self::ARRAY_NAME));
-            }
+            $this->arrayShapeGuard->assertArray($value, self::ARRAY_NAME);
             $taxes[] = $this->taxTransformer->transform($value);
         }
 

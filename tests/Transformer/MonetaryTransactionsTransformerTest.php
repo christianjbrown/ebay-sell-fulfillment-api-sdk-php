@@ -6,6 +6,7 @@ namespace ChristianBrown\EBay\SellFulfillment\Tests\Transformer;
 
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Model\MonetaryTransactionInterface;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuardInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\MonetaryTransactionsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\MonetaryTransactionsTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\MonetaryTransactionTransformerInterface;
@@ -33,25 +34,36 @@ final class MonetaryTransactionsTransformerTest extends TestCase
                 ]
             );
 
-        $transformer = new MonetaryTransactionsTransformer($monetaryTransactionTransformer);
+        $transformer = new MonetaryTransactionsTransformer($monetaryTransactionTransformer, self::passingArrayShapeGuard());
 
         self::assertSame([$first, $second], $transformer->transform($data));
     }
 
     public function testTransformEmpty(): void
     {
-        $transformer = new MonetaryTransactionsTransformer(self::createStub(MonetaryTransactionTransformerInterface::class));
+        $transformer = new MonetaryTransactionsTransformer(self::createStub(MonetaryTransactionTransformerInterface::class), self::passingArrayShapeGuard());
 
         self::assertSame([], $transformer->transform([]));
     }
 
     public function testTransformThrowsOnNonArrayElement(): void
     {
-        $transformer = new MonetaryTransactionsTransformer(self::createStub(MonetaryTransactionTransformerInterface::class));
+        $exception = new UnexpectedResponseException(sprintf(MonetaryTransactionsTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, MonetaryTransactionsTransformerInterface::ARRAY_NAME));
+
+        $arrayShapeGuard = self::createMock(ArrayShapeGuardInterface::class);
+        $arrayShapeGuard->expects(self::once())->method('assertArray')
+            ->with('not-an-array', MonetaryTransactionsTransformerInterface::ARRAY_NAME)
+            ->willThrowException($exception);
+
+        $transformer = new MonetaryTransactionsTransformer(self::createStub(MonetaryTransactionTransformerInterface::class), $arrayShapeGuard);
 
         $this->expectException(UnexpectedResponseException::class);
-        $this->expectExceptionMessage(sprintf(MonetaryTransactionsTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, MonetaryTransactionsTransformerInterface::ARRAY_NAME));
 
         $transformer->transform(['not-an-array']);
+    }
+
+    private static function passingArrayShapeGuard(): ArrayShapeGuardInterface
+    {
+        return self::createStub(ArrayShapeGuardInterface::class);
     }
 }

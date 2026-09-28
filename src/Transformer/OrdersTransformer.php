@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace ChristianBrown\EBay\SellFulfillment\Transformer;
 
-use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Model\OrderInterface;
 
 use function array_values;
 use function count;
-use function is_array;
-use function sprintf;
 
 final class OrdersTransformer implements OrdersTransformerInterface
 {
+    private ArrayShapeGuardInterface $arrayShapeGuard;
     private OrderTransformerInterface $orderTransformer;
 
-    public function __construct(OrderTransformerInterface $orderTransformer)
+    public function __construct(OrderTransformerInterface $orderTransformer, ArrayShapeGuardInterface $arrayShapeGuard)
     {
         $this->orderTransformer = $orderTransformer;
+        $this->arrayShapeGuard = $arrayShapeGuard;
     }
 
     /**
@@ -32,9 +31,7 @@ final class OrdersTransformer implements OrdersTransformerInterface
         $values = array_values($data);
         for ($i = 0, $count = count($values); $i < $count; ++$i) {
             $value = $values[$i];
-            if (!is_array($value)) {
-                throw new UnexpectedResponseException(sprintf(self::UNEXPECTED_ARRAY_SPRINTF, self::ARRAY_NAME));
-            }
+            $this->arrayShapeGuard->assertArray($value, self::ARRAY_NAME);
             $orders[] = $this->orderTransformer->transform($value);
         }
 
