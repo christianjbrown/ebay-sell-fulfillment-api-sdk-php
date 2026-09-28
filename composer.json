@@ -19,12 +19,12 @@
         "php": "^8.5",
         "christianjbrown/api-client": "^1.0",
         "christianjbrown/key-value-store": "^1.0",
-        "christianjbrown/oauth2-client": "dev-main",
+        "christianjbrown/oauth2-client": "^1.0",
         "psr/container": "^2.0",
         "symfony/dependency-injection": "^8.0"
     },
     "require-dev": {
-        "christianjbrown/code-quality-scripts": "dev-main",
+        "christianjbrown/code-quality-scripts": "^1.0",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^13.0"
     },
@@ -63,23 +63,5 @@
         "allow-plugins": {
             "dealerdirect/phpcodesniffer-composer-installer": true
         }
-    },
-    "repositories": [
-        {
-            "type": "github",
-            "url": "git@github.com:christianjbrown/api-client-php.git"
-        },
-        {
-            "type": "github",
-            "url": "git@github.com:christianjbrown/code-quality-scripts-php.git"
-        },
-        {
-            "type": "github",
-            "url": "git@github.com:christianjbrown/key-value-store-php.git"
-        },
-        {
-            "type": "github",
-            "url": "git@github.com:christianjbrown/oauth2-client-php.git"
-        }
-    ]
+    }
 }
