@@ -1,6 +1,6 @@
 # eBay Sell Fulfillment API SDK
 
-[![CI](https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/actions/workflows/ci.yml) [![Packagist](https://img.shields.io/packagist/v/christianjbrown/ebay-sell-fulfillment-api-sdk)](https://packagist.org/packages/christianjbrown/ebay-sell-fulfillment-api-sdk)
+[![CI](https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/actions/workflows/ci.yml/badge.svg)](https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/actions/workflows/ci.yml) [![Packagist](https://img.shields.io/packagist/v/christianjbrown/ebay-sell-fulfillment-api-sdk)](https://packagist.org/packages/christianjbrown/ebay-sell-fulfillment-api-sdk) [![License](https://img.shields.io/packagist/l/christianjbrown/ebay-sell-fulfillment-api-sdk)](https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/blob/main/LICENSE) [![PHP](https://img.shields.io/packagist/dependency-v/christianjbrown/ebay-sell-fulfillment-api-sdk/php)](https://packagist.org/packages/christianjbrown/ebay-sell-fulfillment-api-sdk)
 
 A strongly-typed PHP client for the [eBay Sell Fulfillment API](https://developer.ebay.com/api-docs/sell/fulfillment/overview.html). It reads a seller's orders, shipments and payment disputes — and writes shipping fulfillments, refunds and dispute responses — returning plain, typed model objects rather than raw arrays.
 
