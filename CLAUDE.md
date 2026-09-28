@@ -50,8 +50,11 @@ lints with **PHP_CodeSniffer 4** using the **`ChristianBrown` standard**, and **
 (`@PhpCsFixer`/`@Symfony`, risky ruleset) handles formatting. Static analysis is **PHPStan at
 `level: max`** (`phpstan.neon.dist`). The **GitHub Actions CI workflow** (`.github/workflows/ci.yml`)
 runs style, PHPStan and the PHPUnit suite with coverage on every push/PR; every runtime dependency is
-public, so there is deliberately **no `COMPOSER_AUTH` step**. Always run `composer fix-style` first,
-then `composer check-style`, then `composer stan`, then `composer test` before finishing.
+public, so there is deliberately **no `COMPOSER_AUTH` step**. After the coverage run, a
+**`./bin/php-coverage-check .phpunit.cache/coverage.txt`** step (from `code-quality-scripts`) fails
+the build if line, method, class, branch or path coverage has dropped below 100%. Always run
+`composer fix-style` first, then `composer check-style`, then `composer stan`, then `composer test`
+before finishing.
 
 ## Architecture
 
