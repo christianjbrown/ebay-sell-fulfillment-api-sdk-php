@@ -10,6 +10,11 @@ final class LineItem implements LineItemInterface
      * @var array<int, AppliedPromotionInterface>
      */
     private array $appliedPromotions = [];
+
+    /**
+     * @var array<int, PropertyInterface>
+     */
+    private array $compatibilityProperties = [];
     private ?DeliveryCostInterface $deliveryCost = null;
     private ?AmountInterface $discountedLineItemCost = null;
 
@@ -61,6 +66,14 @@ final class LineItem implements LineItemInterface
     public function getAppliedPromotions(): array
     {
         return $this->appliedPromotions;
+    }
+
+    /**
+     * @return array<int, PropertyInterface>
+     */
+    public function getCompatibilityProperties(): array
+    {
+        return $this->compatibilityProperties;
     }
 
     public function getDeliveryCost(): ?DeliveryCostInterface
@@ -204,6 +217,16 @@ final class LineItem implements LineItemInterface
     public function setAppliedPromotions(array $value): LineItemInterface
     {
         $this->appliedPromotions = $value;
+
+        return $this;
+    }
+
+    /**
+     * @param array<int, PropertyInterface> $value
+     */
+    public function setCompatibilityProperties(array $value): LineItemInterface
+    {
+        $this->compatibilityProperties = $value;
 
         return $this;
     }
