@@ -49,7 +49,7 @@ You supply five things to the `SellFulfillment` entry point:
 - a **`TtlAwareKeyValueStoreInterface`** to hold the current access token (an in-memory store is fine — it's re-fetched as needed),
 - a **`KeyValueStoreInterface`** holding your refresh token. This one must **persist**, because eBay rotates the refresh token on every refresh and the client writes the new value back.
 
-An optional sixth argument, a `LockInterface`, serialises the refresh across processes so a rotating refresh token is never spent by two refreshes at once.
+An optional sixth argument, a `LockInterface`, serialises the refresh across processes so a rotating refresh token is never spent by two refreshes at once. An optional seventh argument, an `ApiHostInterface`, overrides the hosts every request is built from — see [Targeting the sandbox](#targeting-the-sandbox) below.
 
 ```php
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
@@ -73,6 +73,30 @@ $sellFulfillment = new SellFulfillment(
 );
 
 $orderApi = $sellFulfillment->getOrderApi();   // OrderApiInterface
+```
+
+### Targeting the sandbox
+
+Every request is built from a host the client resolves through `ApiHostInterface`: `getApiUrl()` for order and shipping fulfillment calls (defaults to `https://api.ebay.com`), `getApizUrl()` for payment dispute calls (defaults to `https://apiz.ebay.com`), and `getOAuthTokenUrl()` for the token endpoint (defaults to `https://api.ebay.com/identity/v1/oauth2/token`). Pass a custom `ApiHost` as the seventh constructor argument to point the whole client at eBay's sandbox — `https://api.sandbox.ebay.com` and `https://apiz.sandbox.ebay.com`:
+
+```php
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHost;
+
+$sandboxHost = new ApiHost(
+    'https://api.sandbox.ebay.com',
+    'https://apiz.sandbox.ebay.com',
+    'https://api.sandbox.ebay.com/identity/v1/oauth2/token'
+);
+
+$sellFulfillment = new SellFulfillment(
+    'your-sandbox-app-id',
+    'your-sandbox-cert-id',
+    CredentialsInterface::MARKETPLACE_ID_EBAY_GB,
+    $accessTokenStore,
+    $refreshTokenStore,
+    null,
+    $sandboxHost
+);
 ```
 
 ### Reading orders

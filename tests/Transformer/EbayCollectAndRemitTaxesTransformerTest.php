@@ -6,6 +6,7 @@ namespace ChristianBrown\EBay\SellFulfillment\Tests\Transformer;
 
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Model\EbayCollectAndRemitTaxInterface;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuardInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\EbayCollectAndRemitTaxesTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\EbayCollectAndRemitTaxesTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\EbayCollectAndRemitTaxTransformerInterface;
@@ -33,25 +34,36 @@ final class EbayCollectAndRemitTaxesTransformerTest extends TestCase
                 ]
             );
 
-        $transformer = new EbayCollectAndRemitTaxesTransformer($ebayCollectAndRemitTaxTransformer);
+        $transformer = new EbayCollectAndRemitTaxesTransformer($ebayCollectAndRemitTaxTransformer, self::passingArrayShapeGuard());
 
         self::assertSame([$first, $second], $transformer->transform($data));
     }
 
     public function testTransformEmpty(): void
     {
-        $transformer = new EbayCollectAndRemitTaxesTransformer(self::createStub(EbayCollectAndRemitTaxTransformerInterface::class));
+        $transformer = new EbayCollectAndRemitTaxesTransformer(self::createStub(EbayCollectAndRemitTaxTransformerInterface::class), self::passingArrayShapeGuard());
 
         self::assertSame([], $transformer->transform([]));
     }
 
     public function testTransformThrowsOnNonArrayElement(): void
     {
-        $transformer = new EbayCollectAndRemitTaxesTransformer(self::createStub(EbayCollectAndRemitTaxTransformerInterface::class));
+        $exception = new UnexpectedResponseException(sprintf(EbayCollectAndRemitTaxesTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, EbayCollectAndRemitTaxesTransformerInterface::ARRAY_NAME));
+
+        $arrayShapeGuard = self::createMock(ArrayShapeGuardInterface::class);
+        $arrayShapeGuard->expects(self::once())->method('assertArray')
+            ->with('not-an-array', EbayCollectAndRemitTaxesTransformerInterface::ARRAY_NAME)
+            ->willThrowException($exception);
+
+        $transformer = new EbayCollectAndRemitTaxesTransformer(self::createStub(EbayCollectAndRemitTaxTransformerInterface::class), $arrayShapeGuard);
 
         $this->expectException(UnexpectedResponseException::class);
-        $this->expectExceptionMessage(sprintf(EbayCollectAndRemitTaxesTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, EbayCollectAndRemitTaxesTransformerInterface::ARRAY_NAME));
 
         $transformer->transform(['not-an-array']);
+    }
+
+    private static function passingArrayShapeGuard(): ArrayShapeGuardInterface
+    {
+        return self::createStub(ArrayShapeGuardInterface::class);
     }
 }

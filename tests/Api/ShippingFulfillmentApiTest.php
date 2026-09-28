@@ -12,6 +12,7 @@ use ChristianBrown\EBay\SellFulfillment\Api\ShippingFulfillmentApi;
 use ChristianBrown\EBay\SellFulfillment\Api\ShippingFulfillmentApiInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ShippingFulfillmentDetailsInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ShippingFulfillmentInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ShippingFulfillmentPagedCollectionInterface;
@@ -226,6 +227,14 @@ final class ShippingFulfillmentApiTest extends TestCase
         self::assertSame($fulfillment, $second);
     }
 
+    private static function apiHost(): ApiHostInterface
+    {
+        $apiHost = self::createStub(ApiHostInterface::class);
+        $apiHost->method('getApiUrl')->willReturn(ApiHostInterface::DEFAULT_API_URL);
+
+        return $apiHost;
+    }
+
     private static function buildApi(?JsonApiRequestSenderInterface $requestSender = null, ?ApiRequestSenderInterface $apiRequestSender = null, ?ArrayToJsonTransformerInterface $arrayToJsonTransformer = null, ?ShippingFulfillmentTransformerInterface $transformer = null, ?ShippingFulfillmentPagedCollectionTransformerInterface $collectionTransformer = null, ?ShippingFulfillmentDetailsSerializerInterface $serializer = null): ShippingFulfillmentApi
     {
         $credentials = self::createStub(CredentialsInterface::class);
@@ -239,6 +248,7 @@ final class ShippingFulfillmentApiTest extends TestCase
             $collectionTransformer ?? self::createStub(ShippingFulfillmentPagedCollectionTransformerInterface::class),
             $serializer ?? self::createStub(ShippingFulfillmentDetailsSerializerInterface::class),
             $credentials,
+            self::apiHost(),
         );
     }
 

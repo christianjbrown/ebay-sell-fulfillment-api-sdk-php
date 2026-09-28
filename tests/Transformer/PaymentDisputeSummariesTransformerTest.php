@@ -6,6 +6,7 @@ namespace ChristianBrown\EBay\SellFulfillment\Tests\Transformer;
 
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Model\PaymentDisputeSummaryInterface;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuardInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\PaymentDisputeSummariesTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\PaymentDisputeSummariesTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\PaymentDisputeSummaryTransformerInterface;
@@ -33,25 +34,36 @@ final class PaymentDisputeSummariesTransformerTest extends TestCase
                 ]
             );
 
-        $transformer = new PaymentDisputeSummariesTransformer($paymentDisputeSummaryTransformer);
+        $transformer = new PaymentDisputeSummariesTransformer($paymentDisputeSummaryTransformer, self::passingArrayShapeGuard());
 
         self::assertSame([$first, $second], $transformer->transform($data));
     }
 
     public function testTransformEmpty(): void
     {
-        $transformer = new PaymentDisputeSummariesTransformer(self::createStub(PaymentDisputeSummaryTransformerInterface::class));
+        $transformer = new PaymentDisputeSummariesTransformer(self::createStub(PaymentDisputeSummaryTransformerInterface::class), self::passingArrayShapeGuard());
 
         self::assertSame([], $transformer->transform([]));
     }
 
     public function testTransformThrowsOnNonArrayElement(): void
     {
-        $transformer = new PaymentDisputeSummariesTransformer(self::createStub(PaymentDisputeSummaryTransformerInterface::class));
+        $exception = new UnexpectedResponseException(sprintf(PaymentDisputeSummariesTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, PaymentDisputeSummariesTransformerInterface::ARRAY_NAME));
+
+        $arrayShapeGuard = self::createMock(ArrayShapeGuardInterface::class);
+        $arrayShapeGuard->expects(self::once())->method('assertArray')
+            ->with('not-an-array', PaymentDisputeSummariesTransformerInterface::ARRAY_NAME)
+            ->willThrowException($exception);
+
+        $transformer = new PaymentDisputeSummariesTransformer(self::createStub(PaymentDisputeSummaryTransformerInterface::class), $arrayShapeGuard);
 
         $this->expectException(UnexpectedResponseException::class);
-        $this->expectExceptionMessage(sprintf(PaymentDisputeSummariesTransformerInterface::UNEXPECTED_ARRAY_SPRINTF, PaymentDisputeSummariesTransformerInterface::ARRAY_NAME));
 
         $transformer->transform(['not-an-array']);
+    }
+
+    private static function passingArrayShapeGuard(): ArrayShapeGuardInterface
+    {
+        return self::createStub(ArrayShapeGuardInterface::class);
     }
 }

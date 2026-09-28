@@ -13,6 +13,7 @@ use ChristianBrown\EBay\SellFulfillment\Api\PaymentDisputeEvidenceApi;
 use ChristianBrown\EBay\SellFulfillment\Api\PaymentDisputeEvidenceApiInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
 use ChristianBrown\EBay\SellFulfillment\Http\MultipartFormDataBuilderInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AddEvidencePaymentDisputeRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AddEvidencePaymentDisputeResponseInterface;
@@ -162,6 +163,14 @@ final class PaymentDisputeEvidenceApiTest extends TestCase
         $api->uploadEvidenceFile(self::DISPUTE_ID, 'evidence.png', PaymentDisputeEvidenceApiInterface::CONTENT_TYPE_PNG, 'binary-bytes');
     }
 
+    private static function apiHost(): ApiHostInterface
+    {
+        $apiHost = self::createStub(ApiHostInterface::class);
+        $apiHost->method('getApizUrl')->willReturn(ApiHostInterface::DEFAULT_APIZ_URL);
+
+        return $apiHost;
+    }
+
     private static function buildEvidenceApi(?ApiRequestSenderInterface $apiRequestSender = null, ?ArrayToJsonTransformerInterface $arrayToJsonTransformer = null, ?JsonToArrayTransformerInterface $jsonToArrayTransformer = null, ?MultipartFormDataBuilderInterface $multipartFormDataBuilder = null, ?FileEvidenceTransformerInterface $fileEvidenceTransformer = null, ?UpdateEvidencePaymentDisputeRequestSerializerInterface $updateEvidenceSerializer = null): PaymentDisputeEvidenceApi
     {
         return new PaymentDisputeEvidenceApi(
@@ -175,6 +184,7 @@ final class PaymentDisputeEvidenceApiTest extends TestCase
             self::createStub(AddEvidencePaymentDisputeRequestSerializerInterface::class),
             $updateEvidenceSerializer ?? self::createStub(UpdateEvidencePaymentDisputeRequestSerializerInterface::class),
             self::credentials(),
+            self::apiHost(),
         );
     }
 
@@ -191,6 +201,7 @@ final class PaymentDisputeEvidenceApiTest extends TestCase
             $addEvidenceSerializer ?? self::createStub(AddEvidencePaymentDisputeRequestSerializerInterface::class),
             self::createStub(UpdateEvidencePaymentDisputeRequestSerializerInterface::class),
             self::credentials(),
+            self::apiHost(),
         );
     }
 

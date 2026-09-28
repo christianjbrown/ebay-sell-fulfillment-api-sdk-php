@@ -16,8 +16,17 @@ use ChristianBrown\EBay\SellFulfillment\Model\UpdateEvidencePaymentDisputeReques
 use ChristianBrown\OAuth2Client\Model\Exception\ExceptionInterface as OAuth2ExceptionInterface;
 use Random\RandomException;
 
-interface PaymentDisputeEvidenceApiInterface extends ApiInterface
+interface PaymentDisputeEvidenceApiInterface
 {
+    public const string API_PATH_ADD_EVIDENCE_SPRINTF = '/sell/fulfillment/v1/payment_dispute/%s/add_evidence';
+    public const string API_PATH_FETCH_EVIDENCE_CONTENT_SPRINTF = '/sell/fulfillment/v1/payment_dispute/%s/fetch_evidence_content';
+    public const string API_PATH_UPDATE_EVIDENCE_SPRINTF = '/sell/fulfillment/v1/payment_dispute/%s/update_evidence';
+    public const string API_PATH_UPLOAD_EVIDENCE_FILE_SPRINTF = '/sell/fulfillment/v1/payment_dispute/%s/upload_evidence_file';
+
+    /**
+     * Kept for backward compatibility; the client now builds request URLs from
+     * the injected {@see ApiHostInterface} and the `API_PATH_*` constants below.
+     */
     public const string API_URL_ADD_EVIDENCE_SPRINTF = 'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/%s/add_evidence';
     public const string API_URL_FETCH_EVIDENCE_CONTENT_SPRINTF = 'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/%s/fetch_evidence_content';
     public const string API_URL_UPDATE_EVIDENCE_SPRINTF = 'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/%s/update_evidence';

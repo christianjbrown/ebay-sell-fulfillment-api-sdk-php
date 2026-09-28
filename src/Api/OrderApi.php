@@ -7,6 +7,7 @@ namespace ChristianBrown\EBay\SellFulfillment\Api;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\IssueRefundRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\OrderInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\OrderSearchPagedCollectionInterface;
@@ -21,6 +22,7 @@ use function sprintf;
 
 final class OrderApi implements OrderApiInterface
 {
+    private ApiHostInterface $apiHost;
     private CredentialsInterface $credentials;
     private IssueRefundRequestSerializerInterface $issueRefundRequestSerializer;
 
@@ -38,7 +40,7 @@ final class OrderApi implements OrderApiInterface
     private RefundTransformerInterface $refundTransformer;
     private JsonApiRequestSenderInterface $requestSender;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, OrderTransformerInterface $orderTransformer, OrderSearchPagedCollectionTransformerInterface $orderSearchPagedCollectionTransformer, RefundTransformerInterface $refundTransformer, IssueRefundRequestSerializerInterface $issueRefundRequestSerializer, CredentialsInterface $credentials)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, OrderTransformerInterface $orderTransformer, OrderSearchPagedCollectionTransformerInterface $orderSearchPagedCollectionTransformer, RefundTransformerInterface $refundTransformer, IssueRefundRequestSerializerInterface $issueRefundRequestSerializer, CredentialsInterface $credentials, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->orderTransformer = $orderTransformer;
@@ -46,6 +48,7 @@ final class OrderApi implements OrderApiInterface
         $this->refundTransformer = $refundTransformer;
         $this->issueRefundRequestSerializer = $issueRefundRequestSerializer;
         $this->credentials = $credentials;
+        $this->apiHost = $apiHost;
     }
 
     public function getOrder(string $orderId, ?string $fieldGroups = null, bool $skipCache = false): OrderInterface
@@ -58,7 +61,7 @@ final class OrderApi implements OrderApiInterface
             }
         }
 
-        $url = sprintf(self::API_URL_ORDER_SPRINTF, $orderId);
+        $url = $this->apiHost->getApiUrl().sprintf(self::API_PATH_ORDER_SPRINTF, $orderId);
         $data = $this->requestSender->get($url, $query, $this->credentials->toHeaders());
 
         if (empty($data)) {
@@ -80,7 +83,7 @@ final class OrderApi implements OrderApiInterface
             }
         }
 
-        $data = $this->requestSender->get(self::API_URL_ORDERS, $query, $this->credentials->toHeaders());
+        $data = $this->requestSender->get($this->apiHost->getApiUrl().self::API_PATH_ORDERS, $query, $this->credentials->toHeaders());
 
         if (empty($data)) {
             throw new UnexpectedResponseException(self::UNEXPECTED_RESPONSE);
@@ -93,7 +96,7 @@ final class OrderApi implements OrderApiInterface
 
     public function issueRefund(string $orderId, IssueRefundRequestInterface $issueRefundRequest): RefundInterface
     {
-        $url = sprintf(self::API_URL_ISSUE_REFUND_SPRINTF, $orderId);
+        $url = $this->apiHost->getApiUrl().sprintf(self::API_PATH_ISSUE_REFUND_SPRINTF, $orderId);
         $body = $this->issueRefundRequestSerializer->serialize($issueRefundRequest);
         $data = $this->requestSender->post($url, [], $this->credentials->toHeaders(), $body);
 

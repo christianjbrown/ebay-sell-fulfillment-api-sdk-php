@@ -9,6 +9,7 @@ use ChristianBrown\EBay\SellFulfillment\Api\OrderApi;
 use ChristianBrown\EBay\SellFulfillment\Api\OrderApiInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\IssueRefundRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\OrderInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\OrderSearchPagedCollectionInterface;
@@ -263,6 +264,14 @@ final class OrderApiTest extends TestCase
         $api->issueRefund(self::ORDER_ID, self::createStub(IssueRefundRequestInterface::class));
     }
 
+    private static function apiHost(): ApiHostInterface
+    {
+        $apiHost = self::createStub(ApiHostInterface::class);
+        $apiHost->method('getApiUrl')->willReturn(ApiHostInterface::DEFAULT_API_URL);
+
+        return $apiHost;
+    }
+
     private static function buildApi(JsonApiRequestSenderInterface $requestSender, OrderTransformerInterface $orderTransformer, ?OrderSearchPagedCollectionTransformerInterface $collectionTransformer = null, ?RefundTransformerInterface $refundTransformer = null, ?IssueRefundRequestSerializerInterface $serializer = null): OrderApi
     {
         $credentials = self::createStub(CredentialsInterface::class);
@@ -275,6 +284,7 @@ final class OrderApiTest extends TestCase
             $refundTransformer ?? self::createStub(RefundTransformerInterface::class),
             $serializer ?? self::createStub(IssueRefundRequestSerializerInterface::class),
             $credentials,
+            self::apiHost(),
         );
     }
 

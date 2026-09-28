@@ -10,6 +10,7 @@ use ChristianBrown\ApiClient\RequestContext;
 use ChristianBrown\ApiClient\Transformer\ArrayToJsonTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AcceptPaymentDisputeRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ContestPaymentDisputeRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\DisputeSummaryResponseInterface;
@@ -32,6 +33,7 @@ final class PaymentDisputeApi implements PaymentDisputeApiInterface
      * @var array<string, PaymentDisputeActivityHistoryInterface>
      */
     private array $activityCache = [];
+    private ApiHostInterface $apiHost;
     private ApiRequestSenderInterface $apiRequestSender;
     private ArrayToJsonTransformerInterface $arrayToJsonTransformer;
     private ContestPaymentDisputeRequestSerializerInterface $contestPaymentDisputeRequestSerializer;
@@ -51,7 +53,7 @@ final class PaymentDisputeApi implements PaymentDisputeApiInterface
      */
     private array $summaryCache = [];
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $apiRequestSender, ArrayToJsonTransformerInterface $arrayToJsonTransformer, PaymentDisputeTransformerInterface $paymentDisputeTransformer, PaymentDisputeActivityHistoryTransformerInterface $paymentDisputeActivityHistoryTransformer, DisputeSummaryResponseTransformerInterface $disputeSummaryResponseTransformer, AcceptPaymentDisputeRequestSerializerInterface $acceptPaymentDisputeRequestSerializer, ContestPaymentDisputeRequestSerializerInterface $contestPaymentDisputeRequestSerializer, CredentialsInterface $credentials)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $apiRequestSender, ArrayToJsonTransformerInterface $arrayToJsonTransformer, PaymentDisputeTransformerInterface $paymentDisputeTransformer, PaymentDisputeActivityHistoryTransformerInterface $paymentDisputeActivityHistoryTransformer, DisputeSummaryResponseTransformerInterface $disputeSummaryResponseTransformer, AcceptPaymentDisputeRequestSerializerInterface $acceptPaymentDisputeRequestSerializer, ContestPaymentDisputeRequestSerializerInterface $contestPaymentDisputeRequestSerializer, CredentialsInterface $credentials, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->apiRequestSender = $apiRequestSender;
@@ -62,11 +64,12 @@ final class PaymentDisputeApi implements PaymentDisputeApiInterface
         $this->acceptPaymentDisputeRequestSerializer = $acceptPaymentDisputeRequestSerializer;
         $this->contestPaymentDisputeRequestSerializer = $contestPaymentDisputeRequestSerializer;
         $this->credentials = $credentials;
+        $this->apiHost = $apiHost;
     }
 
     public function acceptPaymentDispute(string $paymentDisputeId, AcceptPaymentDisputeRequestInterface $acceptPaymentDisputeRequest): void
     {
-        $url = sprintf(self::API_URL_ACCEPT_SPRINTF, $paymentDisputeId);
+        $url = $this->apiHost->getApizUrl().sprintf(self::API_PATH_ACCEPT_SPRINTF, $paymentDisputeId);
         $context = new RequestContext(ApiRequestSenderInterface::METHOD_POST, $url);
         $body = $this->arrayToJsonTransformer->transform($this->acceptPaymentDisputeRequestSerializer->serialize($acceptPaymentDisputeRequest), $context);
 
@@ -77,7 +80,7 @@ final class PaymentDisputeApi implements PaymentDisputeApiInterface
 
     public function contestPaymentDispute(string $paymentDisputeId, ContestPaymentDisputeRequestInterface $contestPaymentDisputeRequest): void
     {
-        $url = sprintf(self::API_URL_CONTEST_SPRINTF, $paymentDisputeId);
+        $url = $this->apiHost->getApizUrl().sprintf(self::API_PATH_CONTEST_SPRINTF, $paymentDisputeId);
         $context = new RequestContext(ApiRequestSenderInterface::METHOD_POST, $url);
         $body = $this->arrayToJsonTransformer->transform($this->contestPaymentDisputeRequestSerializer->serialize($contestPaymentDisputeRequest), $context);
 
@@ -92,7 +95,7 @@ final class PaymentDisputeApi implements PaymentDisputeApiInterface
             }
         }
 
-        $url = sprintf(self::API_URL_ACTIVITY_SPRINTF, $paymentDisputeId);
+        $url = $this->apiHost->getApizUrl().sprintf(self::API_PATH_ACTIVITY_SPRINTF, $paymentDisputeId);
         $data = $this->requestSender->get($url, [], $this->credentials->toHeaders());
 
         if (empty($data)) {
@@ -112,7 +115,7 @@ final class PaymentDisputeApi implements PaymentDisputeApiInterface
             }
         }
 
-        $url = sprintf(self::API_URL_PAYMENT_DISPUTE_SPRINTF, $paymentDisputeId);
+        $url = $this->apiHost->getApizUrl().sprintf(self::API_PATH_PAYMENT_DISPUTE_SPRINTF, $paymentDisputeId);
         $data = $this->requestSender->get($url, [], $this->credentials->toHeaders());
 
         if (empty($data)) {
@@ -134,7 +137,7 @@ final class PaymentDisputeApi implements PaymentDisputeApiInterface
             }
         }
 
-        $data = $this->requestSender->get(self::API_URL_PAYMENT_DISPUTE_SUMMARY, $query, $this->credentials->toHeaders());
+        $data = $this->requestSender->get($this->apiHost->getApizUrl().self::API_PATH_PAYMENT_DISPUTE_SUMMARY, $query, $this->credentials->toHeaders());
 
         if (empty($data)) {
             throw new UnexpectedResponseException(self::UNEXPECTED_RESPONSE);

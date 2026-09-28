@@ -14,8 +14,15 @@ use ChristianBrown\EBay\SellFulfillment\Model\ShippingFulfillmentInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ShippingFulfillmentPagedCollectionInterface;
 use ChristianBrown\OAuth2Client\Model\Exception\ExceptionInterface as OAuth2ExceptionInterface;
 
-interface ShippingFulfillmentApiInterface extends ApiInterface
+interface ShippingFulfillmentApiInterface
 {
+    public const string API_PATH_SHIPPING_FULFILLMENT_SPRINTF = '/sell/fulfillment/v1/order/%s/shipping_fulfillment/%s';
+    public const string API_PATH_SHIPPING_FULFILLMENTS_SPRINTF = '/sell/fulfillment/v1/order/%s/shipping_fulfillment';
+
+    /**
+     * Kept for backward compatibility; the client now builds request URLs from
+     * the injected {@see ApiHostInterface} and the `API_PATH_*` constants below.
+     */
     public const string API_URL_SHIPPING_FULFILLMENT_SPRINTF = 'https://api.ebay.com/sell/fulfillment/v1/order/%s/shipping_fulfillment/%s';
     public const string API_URL_SHIPPING_FULFILLMENTS_SPRINTF = 'https://api.ebay.com/sell/fulfillment/v1/order/%s/shipping_fulfillment';
     public const string CACHE_KEY_SPRINTF = '%s:%s';

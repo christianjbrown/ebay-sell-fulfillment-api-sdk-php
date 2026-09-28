@@ -12,6 +12,7 @@ use ChristianBrown\EBay\SellFulfillment\Api\PaymentDisputeApi;
 use ChristianBrown\EBay\SellFulfillment\Api\PaymentDisputeApiInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AcceptPaymentDisputeRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ContestPaymentDisputeRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\DisputeSummaryResponseInterface;
@@ -339,6 +340,14 @@ final class PaymentDisputeApiTest extends TestCase
         self::assertSame($dispute, $second);
     }
 
+    private static function apiHost(): ApiHostInterface
+    {
+        $apiHost = self::createStub(ApiHostInterface::class);
+        $apiHost->method('getApizUrl')->willReturn(ApiHostInterface::DEFAULT_APIZ_URL);
+
+        return $apiHost;
+    }
+
     private static function buildReadApi(?JsonApiRequestSenderInterface $requestSender = null, ?PaymentDisputeTransformerInterface $paymentDisputeTransformer = null, ?PaymentDisputeActivityHistoryTransformerInterface $activityHistoryTransformer = null, ?DisputeSummaryResponseTransformerInterface $summaryTransformer = null): PaymentDisputeApi
     {
         return new PaymentDisputeApi(
@@ -351,6 +360,7 @@ final class PaymentDisputeApiTest extends TestCase
             self::createStub(AcceptPaymentDisputeRequestSerializerInterface::class),
             self::createStub(ContestPaymentDisputeRequestSerializerInterface::class),
             self::credentials(),
+            self::apiHost(),
         );
     }
 
@@ -366,6 +376,7 @@ final class PaymentDisputeApiTest extends TestCase
             $acceptSerializer ?? self::createStub(AcceptPaymentDisputeRequestSerializerInterface::class),
             $contestSerializer ?? self::createStub(ContestPaymentDisputeRequestSerializerInterface::class),
             self::credentials(),
+            self::apiHost(),
         );
     }
 
