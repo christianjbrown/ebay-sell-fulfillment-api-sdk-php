@@ -15,19 +15,18 @@ primary entry point is the `SellFulfillment` facade (`src/SellFulfillment.php`),
 resource clients, their transformer and serializer chains, and the OAuth token-refresh machinery
 through a Symfony `ContainerBuilder` DI container.
 
-The consumer that motivated it is underpinned.org's lifetime sold count per pin badge. The Browse API
+A common use is a lifetime sold count per listing. The Browse API
 404s on ended listings and the Trading API only reaches 90 days past a listing's end, but `getOrders`
 returns roughly **two years** of orders regardless of listing state — so aggregating
 `lineItems[].quantity` by `lineItems[].legacyItemId` reconstructs sold counts for ended listings.
 `LineItem` must therefore always expose `legacyItemId`, `lineItemId`, `sku`, `quantity`, `title` and
 `lineItemCost`; do not drop or rename those.
 
-> **The SDK is unverified against live eBay traffic.** It was written entirely to the documented
-> contract because minting the first refresh token needs a browser consent flow. The README's
-> "Unverified against live traffic" section lists, in priority order, the calls to smoke-test once a
-> token exists (`getOrders` filter syntax and paging first, then `fieldGroups=TAX_BREAKDOWN`,
-> `createShippingFulfillment`'s empty `201`, `uploadEvidenceFile`'s multipart body, and
-> `fetchEvidenceContent`'s binary body). Update that section as each is confirmed.
+> **Only `getOrders` has run against live eBay traffic.** Everything else was written to the
+> documented contract. The README's "Live traffic" section lists, in priority order, the calls still
+> to smoke-test (`fieldGroups=TAX_BREAKDOWN`, `createShippingFulfillment`'s empty `201`,
+> `uploadEvidenceFile`'s multipart body, and `fetchEvidenceContent`'s binary body). Update that
+> section as each is confirmed.
 
 ## Commands
 
