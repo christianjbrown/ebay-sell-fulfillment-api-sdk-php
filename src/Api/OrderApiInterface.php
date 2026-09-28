@@ -15,8 +15,16 @@ use ChristianBrown\EBay\SellFulfillment\Model\OrderSearchPagedCollectionInterfac
 use ChristianBrown\EBay\SellFulfillment\Model\RefundInterface;
 use ChristianBrown\OAuth2Client\Model\Exception\ExceptionInterface as OAuth2ExceptionInterface;
 
-interface OrderApiInterface extends ApiInterface
+interface OrderApiInterface
 {
+    public const string API_PATH_ISSUE_REFUND_SPRINTF = '/sell/fulfillment/v1/order/%s/issue_refund';
+    public const string API_PATH_ORDER_SPRINTF = '/sell/fulfillment/v1/order/%s';
+    public const string API_PATH_ORDERS = '/sell/fulfillment/v1/order';
+
+    /**
+     * Kept for backward compatibility; the client now builds request URLs from
+     * the injected {@see ApiHostInterface} and the `API_PATH_*` constants below.
+     */
     public const string API_URL_ISSUE_REFUND_SPRINTF = 'https://api.ebay.com/sell/fulfillment/v1/order/%s/issue_refund';
     public const string API_URL_ORDER_SPRINTF = 'https://api.ebay.com/sell/fulfillment/v1/order/%s';
     public const string API_URL_ORDERS = 'https://api.ebay.com/sell/fulfillment/v1/order';

@@ -11,6 +11,7 @@ use ChristianBrown\ApiClient\Transformer\ArrayToJsonTransformerInterface;
 use ChristianBrown\ApiClient\Transformer\JsonToArrayTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
 use ChristianBrown\EBay\SellFulfillment\Http\MultipartFormDataBuilderInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AddEvidencePaymentDisputeRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AddEvidencePaymentDisputeResponseInterface;
@@ -27,6 +28,7 @@ final class PaymentDisputeEvidenceApi implements PaymentDisputeEvidenceApiInterf
 {
     private AddEvidencePaymentDisputeRequestSerializerInterface $addEvidencePaymentDisputeRequestSerializer;
     private AddEvidencePaymentDisputeResponseTransformerInterface $addEvidencePaymentDisputeResponseTransformer;
+    private ApiHostInterface $apiHost;
     private ApiRequestSenderInterface $apiRequestSender;
     private ArrayToJsonTransformerInterface $arrayToJsonTransformer;
     private CredentialsInterface $credentials;
@@ -36,7 +38,7 @@ final class PaymentDisputeEvidenceApi implements PaymentDisputeEvidenceApiInterf
     private JsonApiRequestSenderInterface $requestSender;
     private UpdateEvidencePaymentDisputeRequestSerializerInterface $updateEvidencePaymentDisputeRequestSerializer;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $apiRequestSender, ArrayToJsonTransformerInterface $arrayToJsonTransformer, JsonToArrayTransformerInterface $jsonToArrayTransformer, MultipartFormDataBuilderInterface $multipartFormDataBuilder, AddEvidencePaymentDisputeResponseTransformerInterface $addEvidencePaymentDisputeResponseTransformer, FileEvidenceTransformerInterface $fileEvidenceTransformer, AddEvidencePaymentDisputeRequestSerializerInterface $addEvidencePaymentDisputeRequestSerializer, UpdateEvidencePaymentDisputeRequestSerializerInterface $updateEvidencePaymentDisputeRequestSerializer, CredentialsInterface $credentials)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $apiRequestSender, ArrayToJsonTransformerInterface $arrayToJsonTransformer, JsonToArrayTransformerInterface $jsonToArrayTransformer, MultipartFormDataBuilderInterface $multipartFormDataBuilder, AddEvidencePaymentDisputeResponseTransformerInterface $addEvidencePaymentDisputeResponseTransformer, FileEvidenceTransformerInterface $fileEvidenceTransformer, AddEvidencePaymentDisputeRequestSerializerInterface $addEvidencePaymentDisputeRequestSerializer, UpdateEvidencePaymentDisputeRequestSerializerInterface $updateEvidencePaymentDisputeRequestSerializer, CredentialsInterface $credentials, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->apiRequestSender = $apiRequestSender;
@@ -48,11 +50,12 @@ final class PaymentDisputeEvidenceApi implements PaymentDisputeEvidenceApiInterf
         $this->addEvidencePaymentDisputeRequestSerializer = $addEvidencePaymentDisputeRequestSerializer;
         $this->updateEvidencePaymentDisputeRequestSerializer = $updateEvidencePaymentDisputeRequestSerializer;
         $this->credentials = $credentials;
+        $this->apiHost = $apiHost;
     }
 
     public function addEvidence(string $paymentDisputeId, AddEvidencePaymentDisputeRequestInterface $addEvidencePaymentDisputeRequest): AddEvidencePaymentDisputeResponseInterface
     {
-        $url = sprintf(self::API_URL_ADD_EVIDENCE_SPRINTF, $paymentDisputeId);
+        $url = $this->apiHost->getApizUrl().sprintf(self::API_PATH_ADD_EVIDENCE_SPRINTF, $paymentDisputeId);
         $body = $this->addEvidencePaymentDisputeRequestSerializer->serialize($addEvidencePaymentDisputeRequest);
         $data = $this->requestSender->post($url, [], $this->credentials->toHeaders(), $body);
 
@@ -65,7 +68,7 @@ final class PaymentDisputeEvidenceApi implements PaymentDisputeEvidenceApiInterf
 
     public function fetchEvidenceContent(string $paymentDisputeId, string $evidenceId, string $fileId): string
     {
-        $url = sprintf(self::API_URL_FETCH_EVIDENCE_CONTENT_SPRINTF, $paymentDisputeId);
+        $url = $this->apiHost->getApizUrl().sprintf(self::API_PATH_FETCH_EVIDENCE_CONTENT_SPRINTF, $paymentDisputeId);
         $query = [
             self::KEY_EVIDENCE_ID => $evidenceId,
             self::KEY_FILE_ID => $fileId,
@@ -77,7 +80,7 @@ final class PaymentDisputeEvidenceApi implements PaymentDisputeEvidenceApiInterf
 
     public function updateEvidence(string $paymentDisputeId, UpdateEvidencePaymentDisputeRequestInterface $updateEvidencePaymentDisputeRequest): void
     {
-        $url = sprintf(self::API_URL_UPDATE_EVIDENCE_SPRINTF, $paymentDisputeId);
+        $url = $this->apiHost->getApizUrl().sprintf(self::API_PATH_UPDATE_EVIDENCE_SPRINTF, $paymentDisputeId);
         $context = new RequestContext(ApiRequestSenderInterface::METHOD_POST, $url);
         $body = $this->arrayToJsonTransformer->transform($this->updateEvidencePaymentDisputeRequestSerializer->serialize($updateEvidencePaymentDisputeRequest), $context);
 
@@ -88,7 +91,7 @@ final class PaymentDisputeEvidenceApi implements PaymentDisputeEvidenceApiInterf
 
     public function uploadEvidenceFile(string $paymentDisputeId, string $fileName, string $contentType, string $contents): FileEvidenceInterface
     {
-        $url = sprintf(self::API_URL_UPLOAD_EVIDENCE_FILE_SPRINTF, $paymentDisputeId);
+        $url = $this->apiHost->getApizUrl().sprintf(self::API_PATH_UPLOAD_EVIDENCE_FILE_SPRINTF, $paymentDisputeId);
         $boundary = $this->multipartFormDataBuilder->generateBoundary();
         $body = $this->multipartFormDataBuilder->build($boundary, self::FIELD_NAME_FILE, $fileName, $contentType, $contents);
 

@@ -10,6 +10,7 @@ use ChristianBrown\ApiClient\RequestContext;
 use ChristianBrown\ApiClient\Transformer\ArrayToJsonTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ShippingFulfillmentDetailsInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ShippingFulfillmentInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ShippingFulfillmentPagedCollectionInterface;
@@ -21,6 +22,7 @@ use function sprintf;
 
 final class ShippingFulfillmentApi implements ShippingFulfillmentApiInterface
 {
+    private ApiHostInterface $apiHost;
     private ApiRequestSenderInterface $apiRequestSender;
     private ArrayToJsonTransformerInterface $arrayToJsonTransformer;
 
@@ -39,7 +41,7 @@ final class ShippingFulfillmentApi implements ShippingFulfillmentApiInterface
     private ShippingFulfillmentPagedCollectionTransformerInterface $shippingFulfillmentPagedCollectionTransformer;
     private ShippingFulfillmentTransformerInterface $shippingFulfillmentTransformer;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $apiRequestSender, ArrayToJsonTransformerInterface $arrayToJsonTransformer, ShippingFulfillmentTransformerInterface $shippingFulfillmentTransformer, ShippingFulfillmentPagedCollectionTransformerInterface $shippingFulfillmentPagedCollectionTransformer, ShippingFulfillmentDetailsSerializerInterface $shippingFulfillmentDetailsSerializer, CredentialsInterface $credentials)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $apiRequestSender, ArrayToJsonTransformerInterface $arrayToJsonTransformer, ShippingFulfillmentTransformerInterface $shippingFulfillmentTransformer, ShippingFulfillmentPagedCollectionTransformerInterface $shippingFulfillmentPagedCollectionTransformer, ShippingFulfillmentDetailsSerializerInterface $shippingFulfillmentDetailsSerializer, CredentialsInterface $credentials, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->apiRequestSender = $apiRequestSender;
@@ -48,11 +50,12 @@ final class ShippingFulfillmentApi implements ShippingFulfillmentApiInterface
         $this->shippingFulfillmentPagedCollectionTransformer = $shippingFulfillmentPagedCollectionTransformer;
         $this->shippingFulfillmentDetailsSerializer = $shippingFulfillmentDetailsSerializer;
         $this->credentials = $credentials;
+        $this->apiHost = $apiHost;
     }
 
     public function createShippingFulfillment(string $orderId, ShippingFulfillmentDetailsInterface $shippingFulfillmentDetails): void
     {
-        $url = sprintf(self::API_URL_SHIPPING_FULFILLMENTS_SPRINTF, $orderId);
+        $url = $this->apiHost->getApiUrl().sprintf(self::API_PATH_SHIPPING_FULFILLMENTS_SPRINTF, $orderId);
         $context = new RequestContext(ApiRequestSenderInterface::METHOD_POST, $url);
         $body = $this->arrayToJsonTransformer->transform($this->shippingFulfillmentDetailsSerializer->serialize($shippingFulfillmentDetails), $context);
 
@@ -70,7 +73,7 @@ final class ShippingFulfillmentApi implements ShippingFulfillmentApiInterface
             }
         }
 
-        $url = sprintf(self::API_URL_SHIPPING_FULFILLMENT_SPRINTF, $orderId, $fulfillmentId);
+        $url = $this->apiHost->getApiUrl().sprintf(self::API_PATH_SHIPPING_FULFILLMENT_SPRINTF, $orderId, $fulfillmentId);
         $data = $this->requestSender->get($url, [], $this->credentials->toHeaders());
 
         if (empty($data)) {
@@ -90,7 +93,7 @@ final class ShippingFulfillmentApi implements ShippingFulfillmentApiInterface
             }
         }
 
-        $url = sprintf(self::API_URL_SHIPPING_FULFILLMENTS_SPRINTF, $orderId);
+        $url = $this->apiHost->getApiUrl().sprintf(self::API_PATH_SHIPPING_FULFILLMENTS_SPRINTF, $orderId);
         $data = $this->requestSender->get($url, [], $this->credentials->toHeaders());
 
         if (empty($data)) {

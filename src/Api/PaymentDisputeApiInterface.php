@@ -16,8 +16,18 @@ use ChristianBrown\EBay\SellFulfillment\Model\PaymentDisputeActivityHistoryInter
 use ChristianBrown\EBay\SellFulfillment\Model\PaymentDisputeInterface;
 use ChristianBrown\OAuth2Client\Model\Exception\ExceptionInterface as OAuth2ExceptionInterface;
 
-interface PaymentDisputeApiInterface extends ApiInterface
+interface PaymentDisputeApiInterface
 {
+    public const string API_PATH_ACCEPT_SPRINTF = '/sell/fulfillment/v1/payment_dispute/%s/accept';
+    public const string API_PATH_ACTIVITY_SPRINTF = '/sell/fulfillment/v1/payment_dispute/%s/activity';
+    public const string API_PATH_CONTEST_SPRINTF = '/sell/fulfillment/v1/payment_dispute/%s/contest';
+    public const string API_PATH_PAYMENT_DISPUTE_SPRINTF = '/sell/fulfillment/v1/payment_dispute/%s';
+    public const string API_PATH_PAYMENT_DISPUTE_SUMMARY = '/sell/fulfillment/v1/payment_dispute_summary';
+
+    /**
+     * Kept for backward compatibility; the client now builds request URLs from
+     * the injected {@see ApiHostInterface} and the `API_PATH_*` constants below.
+     */
     public const string API_URL_ACCEPT_SPRINTF = 'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/%s/accept';
     public const string API_URL_ACTIVITY_SPRINTF = 'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/%s/activity';
     public const string API_URL_CONTEST_SPRINTF = 'https://apiz.ebay.com/sell/fulfillment/v1/payment_dispute/%s/contest';
