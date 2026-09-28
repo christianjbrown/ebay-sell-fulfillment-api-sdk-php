@@ -14,14 +14,16 @@ use function is_string;
 final class FulfillmentStartInstructionTransformer implements FulfillmentStartInstructionTransformerInterface
 {
     private AddressTransformerInterface $addressTransformer;
+    private ?AppointmentDetailsTransformerInterface $appointmentDetailsTransformer;
     private PickupStepTransformerInterface $pickupStepTransformer;
     private ShippingStepTransformerInterface $shippingStepTransformer;
 
-    public function __construct(AddressTransformerInterface $addressTransformer, PickupStepTransformerInterface $pickupStepTransformer, ShippingStepTransformerInterface $shippingStepTransformer)
+    public function __construct(AddressTransformerInterface $addressTransformer, PickupStepTransformerInterface $pickupStepTransformer, ShippingStepTransformerInterface $shippingStepTransformer, ?AppointmentDetailsTransformerInterface $appointmentDetailsTransformer = null)
     {
         $this->addressTransformer = $addressTransformer;
         $this->pickupStepTransformer = $pickupStepTransformer;
         $this->shippingStepTransformer = $shippingStepTransformer;
+        $this->appointmentDetailsTransformer = $appointmentDetailsTransformer;
     }
 
     /**
@@ -31,6 +33,8 @@ final class FulfillmentStartInstructionTransformer implements FulfillmentStartIn
     {
         $fulfillmentStartInstruction = new FulfillmentStartInstruction();
 
+        $this->applyAppointment($fulfillmentStartInstruction, $data);
+        self::applyDestinationTimeZone($fulfillmentStartInstruction, $data);
         self::applyEbaySupportedFulfillment($fulfillmentStartInstruction, $data);
         $this->applyFinalDestinationAddress($fulfillmentStartInstruction, $data);
         self::applyFulfillmentInstructionsType($fulfillmentStartInstruction, $data);
@@ -40,6 +44,37 @@ final class FulfillmentStartInstructionTransformer implements FulfillmentStartIn
         $this->applyShippingStep($fulfillmentStartInstruction, $data);
 
         return $fulfillmentStartInstruction;
+    }
+
+    /**
+     * @phpstan-param mixed[] $data
+     */
+    private function applyAppointment(FulfillmentStartInstruction $fulfillmentStartInstruction, array $data): void
+    {
+        if (null === $this->appointmentDetailsTransformer) {
+            return;
+        }
+        if (empty($data[self::KEY_APPOINTMENT])) {
+            return;
+        }
+        if (!is_array($data[self::KEY_APPOINTMENT])) {
+            return;
+        }
+        $fulfillmentStartInstruction->setAppointment($this->appointmentDetailsTransformer->transform($data[self::KEY_APPOINTMENT]));
+    }
+
+    /**
+     * @phpstan-param mixed[] $data
+     */
+    private static function applyDestinationTimeZone(FulfillmentStartInstruction $fulfillmentStartInstruction, array $data): void
+    {
+        if (empty($data[self::KEY_DESTINATION_TIME_ZONE])) {
+            return;
+        }
+        if (!is_string($data[self::KEY_DESTINATION_TIME_ZONE])) {
+            return;
+        }
+        $fulfillmentStartInstruction->setDestinationTimeZone($data[self::KEY_DESTINATION_TIME_ZONE]);
     }
 
     /**

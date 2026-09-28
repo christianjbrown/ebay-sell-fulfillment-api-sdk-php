@@ -9,6 +9,7 @@ use ChristianBrown\EBay\SellFulfillment\Model\LineItemInterface;
 interface LineItemTransformerInterface
 {
     public const string KEY_APPLIED_PROMOTIONS = 'appliedPromotions';
+    public const string KEY_COMPATIBILITY_PROPERTIES = 'compatibilityProperties';
     public const string KEY_DELIVERY_COST = 'deliveryCost';
     public const string KEY_DISCOUNTED_LINE_ITEM_COST = 'discountedLineItemCost';
     public const string KEY_EBAY_COLLECT_AND_REMIT_TAXES = 'ebayCollectAndRemitTaxes';

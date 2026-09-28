@@ -8,6 +8,7 @@ use ChristianBrown\EBay\SellFulfillment\Model\InfoFromBuyerInterface;
 
 interface InfoFromBuyerTransformerInterface
 {
+    public const string KEY_CONTENT_ON_HOLD = 'contentOnHold';
     public const string KEY_NOTE = 'note';
     public const string KEY_RETURN_SHIPMENT_TRACKING = 'returnShipmentTracking';
 

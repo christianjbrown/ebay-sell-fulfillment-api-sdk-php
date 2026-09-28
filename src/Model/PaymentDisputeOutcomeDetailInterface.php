@@ -6,6 +6,8 @@ namespace ChristianBrown\EBay\SellFulfillment\Model;
 
 interface PaymentDisputeOutcomeDetailInterface
 {
+    public function getDonationCreditAmount(): ?SimpleAmountInterface;
+
     public function getFees(): ?SimpleAmountInterface;
 
     public function getProtectedAmount(): ?SimpleAmountInterface;
@@ -17,6 +19,8 @@ interface PaymentDisputeOutcomeDetailInterface
     public function getRecoupAmount(): ?SimpleAmountInterface;
 
     public function getTotalFeeCredit(): ?SimpleAmountInterface;
+
+    public function setDonationCreditAmount(?SimpleAmountInterface $value): self;
 
     public function setFees(?SimpleAmountInterface $value): self;
 

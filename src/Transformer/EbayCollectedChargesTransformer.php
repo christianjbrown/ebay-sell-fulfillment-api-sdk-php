@@ -12,10 +12,12 @@ use function is_array;
 final class EbayCollectedChargesTransformer implements EbayCollectedChargesTransformerInterface
 {
     private AmountTransformerInterface $amountTransformer;
+    private ?ChargesTransformerInterface $chargesTransformer;
 
-    public function __construct(AmountTransformerInterface $amountTransformer)
+    public function __construct(AmountTransformerInterface $amountTransformer, ?ChargesTransformerInterface $chargesTransformer = null)
     {
         $this->amountTransformer = $amountTransformer;
+        $this->chargesTransformer = $chargesTransformer;
     }
 
     /**
@@ -25,9 +27,27 @@ final class EbayCollectedChargesTransformer implements EbayCollectedChargesTrans
     {
         $ebayCollectedCharges = new EbayCollectedCharges();
 
+        $this->applyCharges($ebayCollectedCharges, $data);
         $this->applyEbayShipping($ebayCollectedCharges, $data);
 
         return $ebayCollectedCharges;
+    }
+
+    /**
+     * @phpstan-param mixed[] $data
+     */
+    private function applyCharges(EbayCollectedCharges $ebayCollectedCharges, array $data): void
+    {
+        if (null === $this->chargesTransformer) {
+            return;
+        }
+        if (empty($data[self::KEY_CHARGES])) {
+            return;
+        }
+        if (!is_array($data[self::KEY_CHARGES])) {
+            return;
+        }
+        $ebayCollectedCharges->setCharges($this->chargesTransformer->transform($data[self::KEY_CHARGES]));
     }
 
     /**

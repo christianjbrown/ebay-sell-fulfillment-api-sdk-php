@@ -17,6 +17,7 @@ use ChristianBrown\EBay\SellFulfillment\Model\LineItemPropertiesInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\LineItemRefundInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\LinkedOrderLineItemInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\NameValuePairInterface;
+use ChristianBrown\EBay\SellFulfillment\Model\PropertyInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\TaxInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AmountTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AppliedPromotionsTransformerInterface;
@@ -32,6 +33,7 @@ use ChristianBrown\EBay\SellFulfillment\Transformer\LineItemTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\LineItemTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\LinkedOrderLineItemsTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\NameValuePairsTransformerInterface;
+use ChristianBrown\EBay\SellFulfillment\Transformer\PropertiesTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\TaxesTransformerInterface;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -44,6 +46,7 @@ final class LineItemTransformerTest extends TestCase
     public function testTransform(): void
     {
         $appliedPromotionsData = ['__appliedPromotions__'];
+        $compatibilityPropertiesData = ['__compatibilityProperties__'];
         $deliveryCostData = ['__deliveryCost__'];
         $discountedLineItemCostData = ['__discountedLineItemCost__'];
         $ebayCollectAndRemitTaxesData = ['__ebayCollectAndRemitTaxes__'];
@@ -60,6 +63,7 @@ final class LineItemTransformerTest extends TestCase
         $variationAspectsData = ['__variationAspects__'];
 
         $appliedPromotions = [self::createStub(AppliedPromotionInterface::class)];
+        $compatibilityProperties = [self::createStub(PropertyInterface::class)];
         $deliveryCost = self::createStub(DeliveryCostInterface::class);
         $discountedLineItemCost = self::createStub(AmountInterface::class);
         $ebayCollectAndRemitTaxes = [self::createStub(EbayCollectAndRemitTaxInterface::class)];
@@ -89,6 +93,13 @@ final class LineItemTransformerTest extends TestCase
             ->willReturnMap(
                 [
                     [$appliedPromotionsData, $appliedPromotions],
+                ]
+            );
+        $compatibilityPropertiesTransformer = self::createStub(PropertiesTransformerInterface::class);
+        $compatibilityPropertiesTransformer->method('transform')
+            ->willReturnMap(
+                [
+                    [$compatibilityPropertiesData, $compatibilityProperties],
                 ]
             );
         $deliveryCostTransformer = self::createStub(DeliveryCostTransformerInterface::class);
@@ -171,6 +182,7 @@ final class LineItemTransformerTest extends TestCase
 
         $data = [
             LineItemTransformerInterface::KEY_APPLIED_PROMOTIONS => $appliedPromotionsData,
+            LineItemTransformerInterface::KEY_COMPATIBILITY_PROPERTIES => $compatibilityPropertiesData,
             LineItemTransformerInterface::KEY_DELIVERY_COST => $deliveryCostData,
             LineItemTransformerInterface::KEY_DISCOUNTED_LINE_ITEM_COST => $discountedLineItemCostData,
             LineItemTransformerInterface::KEY_EBAY_COLLECT_AND_REMIT_TAXES => $ebayCollectAndRemitTaxesData,
@@ -197,11 +209,12 @@ final class LineItemTransformerTest extends TestCase
             LineItemTransformerInterface::KEY_VARIATION_ASPECTS => $variationAspectsData,
         ];
 
-        $transformer = new LineItemTransformer($amountTransformer, $appliedPromotionsTransformer, $deliveryCostTransformer, $ebayCollectAndRemitTaxesTransformer, $ebayCollectedChargesTransformer, $giftDetailsTransformer, $itemLocationTransformer, $lineItemFulfillmentInstructionsTransformer, $lineItemPropertiesTransformer, $lineItemRefundsTransformer, $linkedOrderLineItemsTransformer, $nameValuePairsTransformer, $taxesTransformer);
+        $transformer = new LineItemTransformer($amountTransformer, $appliedPromotionsTransformer, $deliveryCostTransformer, $ebayCollectAndRemitTaxesTransformer, $ebayCollectedChargesTransformer, $giftDetailsTransformer, $itemLocationTransformer, $lineItemFulfillmentInstructionsTransformer, $lineItemPropertiesTransformer, $lineItemRefundsTransformer, $linkedOrderLineItemsTransformer, $nameValuePairsTransformer, $taxesTransformer, $compatibilityPropertiesTransformer);
 
         $actual = $transformer->transform($data);
 
         self::assertSame($appliedPromotions, $actual->getAppliedPromotions());
+        self::assertSame($compatibilityProperties, $actual->getCompatibilityProperties());
         self::assertSame($deliveryCost, $actual->getDeliveryCost());
         self::assertSame($discountedLineItemCost, $actual->getDiscountedLineItemCost());
         self::assertSame($ebayCollectAndRemitTaxes, $actual->getEbayCollectAndRemitTaxes());
@@ -247,6 +260,39 @@ final class LineItemTransformerTest extends TestCase
         yield 'absent' => [[]];
 
         yield 'nonArray' => [[LineItemTransformerInterface::KEY_APPLIED_PROMOTIONS => 'not-an-array']];
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    #[DataProvider('provideTransformCompatibilityPropertiesNotSetCases')]
+    public function testTransformCompatibilityPropertiesNotSet(array $data): void
+    {
+        $compatibilityPropertiesTransformer = self::createStub(PropertiesTransformerInterface::class);
+        $transformer = $this->buildTransformer($compatibilityPropertiesTransformer);
+
+        self::assertSame([], $transformer->transform($data)->getCompatibilityProperties());
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>}>
+     */
+    public static function provideTransformCompatibilityPropertiesNotSetCases(): iterable
+    {
+        yield 'absent' => [[]];
+
+        yield 'nonArray' => [[LineItemTransformerInterface::KEY_COMPATIBILITY_PROPERTIES => 'not-an-array']];
+    }
+
+    public function testTransformCompatibilityPropertiesTransformerNotInjected(): void
+    {
+        $data = [
+            LineItemTransformerInterface::KEY_COMPATIBILITY_PROPERTIES => ['__compatibilityProperties__'],
+        ];
+
+        $transformer = $this->buildTransformer();
+
+        self::assertSame([], $transformer->transform($data)->getCompatibilityProperties());
     }
 
     /**
@@ -595,7 +641,7 @@ final class LineItemTransformerTest extends TestCase
         yield 'nonArray' => [[LineItemTransformerInterface::KEY_VARIATION_ASPECTS => 'not-an-array']];
     }
 
-    private function buildTransformer(): LineItemTransformer
+    private function buildTransformer(?PropertiesTransformerInterface $compatibilityPropertiesTransformer = null): LineItemTransformer
     {
         $amountTransformer = self::createStub(AmountTransformerInterface::class);
         $appliedPromotionsTransformer = self::createStub(AppliedPromotionsTransformerInterface::class);
@@ -611,6 +657,6 @@ final class LineItemTransformerTest extends TestCase
         $nameValuePairsTransformer = self::createStub(NameValuePairsTransformerInterface::class);
         $taxesTransformer = self::createStub(TaxesTransformerInterface::class);
 
-        return new LineItemTransformer($amountTransformer, $appliedPromotionsTransformer, $deliveryCostTransformer, $ebayCollectAndRemitTaxesTransformer, $ebayCollectedChargesTransformer, $giftDetailsTransformer, $itemLocationTransformer, $lineItemFulfillmentInstructionsTransformer, $lineItemPropertiesTransformer, $lineItemRefundsTransformer, $linkedOrderLineItemsTransformer, $nameValuePairsTransformer, $taxesTransformer);
+        return new LineItemTransformer($amountTransformer, $appliedPromotionsTransformer, $deliveryCostTransformer, $ebayCollectAndRemitTaxesTransformer, $ebayCollectedChargesTransformer, $giftDetailsTransformer, $itemLocationTransformer, $lineItemFulfillmentInstructionsTransformer, $lineItemPropertiesTransformer, $lineItemRefundsTransformer, $linkedOrderLineItemsTransformer, $nameValuePairsTransformer, $taxesTransformer, $compatibilityPropertiesTransformer);
     }
 }

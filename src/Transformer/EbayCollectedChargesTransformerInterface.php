@@ -8,6 +8,7 @@ use ChristianBrown\EBay\SellFulfillment\Model\EbayCollectedChargesInterface;
 
 interface EbayCollectedChargesTransformerInterface
 {
+    public const string KEY_CHARGES = 'charges';
     public const string KEY_EBAY_SHIPPING = 'ebayShipping';
 
     /**

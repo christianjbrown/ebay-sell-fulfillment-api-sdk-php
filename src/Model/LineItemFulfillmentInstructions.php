@@ -6,10 +6,17 @@ namespace ChristianBrown\EBay\SellFulfillment\Model;
 
 final class LineItemFulfillmentInstructions implements LineItemFulfillmentInstructionsInterface
 {
+    private ?string $destinationTimeZone = null;
     private ?bool $guaranteedDelivery = null;
     private ?string $maxEstimatedDeliveryDate = null;
     private ?string $minEstimatedDeliveryDate = null;
     private ?string $shipByDate = null;
+    private ?string $sourceTimeZone = null;
+
+    public function getDestinationTimeZone(): ?string
+    {
+        return $this->destinationTimeZone;
+    }
 
     public function getGuaranteedDelivery(): ?bool
     {
@@ -29,6 +36,18 @@ final class LineItemFulfillmentInstructions implements LineItemFulfillmentInstru
     public function getShipByDate(): ?string
     {
         return $this->shipByDate;
+    }
+
+    public function getSourceTimeZone(): ?string
+    {
+        return $this->sourceTimeZone;
+    }
+
+    public function setDestinationTimeZone(?string $value): LineItemFulfillmentInstructionsInterface
+    {
+        $this->destinationTimeZone = $value;
+
+        return $this;
     }
 
     public function setGuaranteedDelivery(?bool $value): LineItemFulfillmentInstructionsInterface
@@ -55,6 +74,13 @@ final class LineItemFulfillmentInstructions implements LineItemFulfillmentInstru
     public function setShipByDate(?string $value): LineItemFulfillmentInstructionsInterface
     {
         $this->shipByDate = $value;
+
+        return $this;
+    }
+
+    public function setSourceTimeZone(?string $value): LineItemFulfillmentInstructionsInterface
+    {
+        $this->sourceTimeZone = $value;
 
         return $this;
     }

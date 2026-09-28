@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace ChristianBrown\EBay\SellFulfillment\Tests\Transformer;
 
 use ChristianBrown\EBay\SellFulfillment\Model\AddressInterface;
+use ChristianBrown\EBay\SellFulfillment\Model\AppointmentDetailsInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\FulfillmentStartInstruction;
 use ChristianBrown\EBay\SellFulfillment\Model\PickupStepInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\ShippingStepInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AddressTransformerInterface;
+use ChristianBrown\EBay\SellFulfillment\Transformer\AppointmentDetailsTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\FulfillmentStartInstructionTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\FulfillmentStartInstructionTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\PickupStepTransformerInterface;
@@ -23,10 +25,12 @@ final class FulfillmentStartInstructionTransformerTest extends TestCase
 {
     public function testTransform(): void
     {
+        $appointmentData = ['__appointment__'];
         $finalDestinationAddressData = ['__finalDestinationAddress__'];
         $pickupStepData = ['__pickupStep__'];
         $shippingStepData = ['__shippingStep__'];
 
+        $appointment = self::createStub(AppointmentDetailsInterface::class);
         $finalDestinationAddress = self::createStub(AddressInterface::class);
         $pickupStep = self::createStub(PickupStepInterface::class);
         $shippingStep = self::createStub(ShippingStepInterface::class);
@@ -52,8 +56,17 @@ final class FulfillmentStartInstructionTransformerTest extends TestCase
                     [$shippingStepData, $shippingStep],
                 ]
             );
+        $appointmentDetailsTransformer = self::createStub(AppointmentDetailsTransformerInterface::class);
+        $appointmentDetailsTransformer->method('transform')
+            ->willReturnMap(
+                [
+                    [$appointmentData, $appointment],
+                ]
+            );
 
         $data = [
+            FulfillmentStartInstructionTransformerInterface::KEY_APPOINTMENT => $appointmentData,
+            FulfillmentStartInstructionTransformerInterface::KEY_DESTINATION_TIME_ZONE => 'test-destinationTimeZone',
             FulfillmentStartInstructionTransformerInterface::KEY_EBAY_SUPPORTED_FULFILLMENT => true,
             FulfillmentStartInstructionTransformerInterface::KEY_FINAL_DESTINATION_ADDRESS => $finalDestinationAddressData,
             FulfillmentStartInstructionTransformerInterface::KEY_FULFILLMENT_INSTRUCTIONS_TYPE => 'test-fulfillmentInstructionsType',
@@ -63,10 +76,12 @@ final class FulfillmentStartInstructionTransformerTest extends TestCase
             FulfillmentStartInstructionTransformerInterface::KEY_SHIPPING_STEP => $shippingStepData,
         ];
 
-        $transformer = new FulfillmentStartInstructionTransformer($addressTransformer, $pickupStepTransformer, $shippingStepTransformer);
+        $transformer = new FulfillmentStartInstructionTransformer($addressTransformer, $pickupStepTransformer, $shippingStepTransformer, $appointmentDetailsTransformer);
 
         $actual = $transformer->transform($data);
 
+        self::assertSame($appointment, $actual->getAppointment());
+        self::assertSame('test-destinationTimeZone', $actual->getDestinationTimeZone());
         self::assertTrue($actual->getEbaySupportedFulfillment());
         self::assertSame($finalDestinationAddress, $actual->getFinalDestinationAddress());
         self::assertSame('test-fulfillmentInstructionsType', $actual->getFulfillmentInstructionsType());
@@ -74,6 +89,39 @@ final class FulfillmentStartInstructionTransformerTest extends TestCase
         self::assertSame('test-minEstimatedDeliveryDate', $actual->getMinEstimatedDeliveryDate());
         self::assertSame($pickupStep, $actual->getPickupStep());
         self::assertSame($shippingStep, $actual->getShippingStep());
+    }
+
+    public function testTransformAppointmentDetailsTransformerNotInjected(): void
+    {
+        $data = [
+            FulfillmentStartInstructionTransformerInterface::KEY_APPOINTMENT => ['__appointment__'],
+        ];
+
+        $transformer = $this->buildTransformer();
+
+        self::assertNull($transformer->transform($data)->getAppointment());
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     */
+    #[DataProvider('provideTransformAppointmentNotSetCases')]
+    public function testTransformAppointmentNotSet(array $data): void
+    {
+        $appointmentDetailsTransformer = self::createStub(AppointmentDetailsTransformerInterface::class);
+        $transformer = new FulfillmentStartInstructionTransformer(self::createStub(AddressTransformerInterface::class), self::createStub(PickupStepTransformerInterface::class), self::createStub(ShippingStepTransformerInterface::class), $appointmentDetailsTransformer);
+
+        self::assertNull($transformer->transform($data)->getAppointment());
+    }
+
+    /**
+     * @return iterable<string, array{array<string, mixed>}>
+     */
+    public static function provideTransformAppointmentNotSetCases(): iterable
+    {
+        yield 'absent' => [[]];
+
+        yield 'nonArray' => [[FulfillmentStartInstructionTransformerInterface::KEY_APPOINTMENT => 'not-an-array']];
     }
 
     /**
@@ -122,12 +170,13 @@ final class FulfillmentStartInstructionTransformerTest extends TestCase
      * @param array<string, mixed> $data
      */
     #[DataProvider('provideTransformScalarFieldStatesCases')]
-    public function testTransformScalarFieldStates(array $data, ?bool $expectedEbaySupportedFulfillment, ?string $expectedFulfillmentInstructionsType, ?string $expectedMaxEstimatedDeliveryDate, ?string $expectedMinEstimatedDeliveryDate): void
+    public function testTransformScalarFieldStates(array $data, ?string $expectedDestinationTimeZone, ?bool $expectedEbaySupportedFulfillment, ?string $expectedFulfillmentInstructionsType, ?string $expectedMaxEstimatedDeliveryDate, ?string $expectedMinEstimatedDeliveryDate): void
     {
         $transformer = $this->buildTransformer();
 
         $actual = $transformer->transform($data);
 
+        self::assertSame($expectedDestinationTimeZone, $actual->getDestinationTimeZone());
         self::assertSame($expectedEbaySupportedFulfillment, $actual->getEbaySupportedFulfillment());
         self::assertSame($expectedFulfillmentInstructionsType, $actual->getFulfillmentInstructionsType());
         self::assertSame($expectedMaxEstimatedDeliveryDate, $actual->getMaxEstimatedDeliveryDate());
@@ -135,21 +184,23 @@ final class FulfillmentStartInstructionTransformerTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{array<string, mixed>, ?bool, ?string, ?string, ?string}>
+     * @return iterable<string, array{array<string, mixed>, ?string, ?bool, ?string, ?string, ?string}>
      */
     public static function provideTransformScalarFieldStatesCases(): iterable
     {
-        yield 'allAbsent' => [[], null, null, null, null];
+        yield 'allAbsent' => [[], null, null, null, null, null];
 
-        yield 'ebaySupportedFulfillmentFalse' => [[FulfillmentStartInstructionTransformerInterface::KEY_EBAY_SUPPORTED_FULFILLMENT => false], false, null, null, null];
+        yield 'destinationTimeZoneWrongType' => [[FulfillmentStartInstructionTransformerInterface::KEY_DESTINATION_TIME_ZONE => 42], null, null, null, null, null];
 
-        yield 'ebaySupportedFulfillmentWrongType' => [[FulfillmentStartInstructionTransformerInterface::KEY_EBAY_SUPPORTED_FULFILLMENT => 'not-bool'], null, null, null, null];
+        yield 'ebaySupportedFulfillmentFalse' => [[FulfillmentStartInstructionTransformerInterface::KEY_EBAY_SUPPORTED_FULFILLMENT => false], null, false, null, null, null];
 
-        yield 'fulfillmentInstructionsTypeWrongType' => [[FulfillmentStartInstructionTransformerInterface::KEY_FULFILLMENT_INSTRUCTIONS_TYPE => 42], null, null, null, null];
+        yield 'ebaySupportedFulfillmentWrongType' => [[FulfillmentStartInstructionTransformerInterface::KEY_EBAY_SUPPORTED_FULFILLMENT => 'not-bool'], null, null, null, null, null];
 
-        yield 'maxEstimatedDeliveryDateWrongType' => [[FulfillmentStartInstructionTransformerInterface::KEY_MAX_ESTIMATED_DELIVERY_DATE => 42], null, null, null, null];
+        yield 'fulfillmentInstructionsTypeWrongType' => [[FulfillmentStartInstructionTransformerInterface::KEY_FULFILLMENT_INSTRUCTIONS_TYPE => 42], null, null, null, null, null];
 
-        yield 'minEstimatedDeliveryDateWrongType' => [[FulfillmentStartInstructionTransformerInterface::KEY_MIN_ESTIMATED_DELIVERY_DATE => 42], null, null, null, null];
+        yield 'maxEstimatedDeliveryDateWrongType' => [[FulfillmentStartInstructionTransformerInterface::KEY_MAX_ESTIMATED_DELIVERY_DATE => 42], null, null, null, null, null];
+
+        yield 'minEstimatedDeliveryDateWrongType' => [[FulfillmentStartInstructionTransformerInterface::KEY_MIN_ESTIMATED_DELIVERY_DATE => 42], null, null, null, null, null];
     }
 
     /**

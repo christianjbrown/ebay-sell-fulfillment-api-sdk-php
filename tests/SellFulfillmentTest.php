@@ -46,11 +46,14 @@ use ChristianBrown\EBay\SellFulfillment\Transformer\AddressTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AmountTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AppliedPromotionsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AppliedPromotionTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\AppointmentDetailsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuard;
 use ChristianBrown\EBay\SellFulfillment\Transformer\BuyerTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelRequestsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelRequestTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelStatusTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ChargesTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ChargeTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\DeliveryCostTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\DisputeAmountTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\DisputeEvidencesTransformer;
@@ -118,6 +121,8 @@ use ChristianBrown\EBay\SellFulfillment\Transformer\PickupStepTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\PostSaleAuthenticationProgramTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\PricingSummaryTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\ProgramTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\PropertiesTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\PropertyTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\RefundTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\ReturnAddressTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\SellerActionsToReleaseTransformer;
@@ -150,11 +155,14 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(AppliedPromotionTransformer::class)]
 #[UsesClass(AppliedPromotionsTransformer::class)]
 #[UsesClass(ApiHost::class)]
+#[UsesClass(AppointmentDetailsTransformer::class)]
 #[UsesClass(ArrayShapeGuard::class)]
 #[UsesClass(BuyerTransformer::class)]
 #[UsesClass(CancelRequestTransformer::class)]
 #[UsesClass(CancelRequestsTransformer::class)]
 #[UsesClass(CancelStatusTransformer::class)]
+#[UsesClass(ChargeTransformer::class)]
+#[UsesClass(ChargesTransformer::class)]
 #[UsesClass(ContainerFactory::class)]
 #[UsesClass(ContestPaymentDisputeRequestSerializer::class)]
 #[UsesClass(CoreServiceRegistrar::class)]
@@ -242,6 +250,8 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(PostSaleAuthenticationProgramTransformer::class)]
 #[UsesClass(PricingSummaryTransformer::class)]
 #[UsesClass(ProgramTransformer::class)]
+#[UsesClass(PropertiesTransformer::class)]
+#[UsesClass(PropertyTransformer::class)]
 #[UsesClass(RefundItemSerializer::class)]
 #[UsesClass(RefundItemsSerializer::class)]
 #[UsesClass(RefundTransformer::class)]

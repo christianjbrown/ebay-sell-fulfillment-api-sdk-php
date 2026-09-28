@@ -8,6 +8,8 @@ use ChristianBrown\EBay\SellFulfillment\Model\FulfillmentStartInstructionInterfa
 
 interface FulfillmentStartInstructionTransformerInterface
 {
+    public const string KEY_APPOINTMENT = 'appointment';
+    public const string KEY_DESTINATION_TIME_ZONE = 'destinationTimeZone';
     public const string KEY_EBAY_SUPPORTED_FULFILLMENT = 'ebaySupportedFulfillment';
     public const string KEY_FINAL_DESTINATION_ADDRESS = 'finalDestinationAddress';
     public const string KEY_FULFILLMENT_INSTRUCTIONS_TYPE = 'fulfillmentInstructionsType';

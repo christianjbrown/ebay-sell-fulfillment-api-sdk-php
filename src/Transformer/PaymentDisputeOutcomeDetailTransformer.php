@@ -26,6 +26,7 @@ final class PaymentDisputeOutcomeDetailTransformer implements PaymentDisputeOutc
     {
         $paymentDisputeOutcomeDetail = new PaymentDisputeOutcomeDetail();
 
+        $this->applyDonationCreditAmount($paymentDisputeOutcomeDetail, $data);
         $this->applyFees($paymentDisputeOutcomeDetail, $data);
         $this->applyProtectedAmount($paymentDisputeOutcomeDetail, $data);
         self::applyProtectionStatus($paymentDisputeOutcomeDetail, $data);
@@ -34,6 +35,20 @@ final class PaymentDisputeOutcomeDetailTransformer implements PaymentDisputeOutc
         $this->applyTotalFeeCredit($paymentDisputeOutcomeDetail, $data);
 
         return $paymentDisputeOutcomeDetail;
+    }
+
+    /**
+     * @phpstan-param mixed[] $data
+     */
+    private function applyDonationCreditAmount(PaymentDisputeOutcomeDetail $paymentDisputeOutcomeDetail, array $data): void
+    {
+        if (empty($data[self::KEY_DONATION_CREDIT_AMOUNT])) {
+            return;
+        }
+        if (!is_array($data[self::KEY_DONATION_CREDIT_AMOUNT])) {
+            return;
+        }
+        $paymentDisputeOutcomeDetail->setDonationCreditAmount($this->simpleAmountTransformer->transform($data[self::KEY_DONATION_CREDIT_AMOUNT]));
     }
 
     /**

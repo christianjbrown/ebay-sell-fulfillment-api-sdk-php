@@ -15,6 +15,7 @@ final class LineItemTransformer implements LineItemTransformerInterface
 {
     private AmountTransformerInterface $amountTransformer;
     private AppliedPromotionsTransformerInterface $appliedPromotionsTransformer;
+    private ?PropertiesTransformerInterface $compatibilityPropertiesTransformer;
     private DeliveryCostTransformerInterface $deliveryCostTransformer;
     private EbayCollectAndRemitTaxesTransformerInterface $ebayCollectAndRemitTaxesTransformer;
     private EbayCollectedChargesTransformerInterface $ebayCollectedChargesTransformer;
@@ -27,7 +28,7 @@ final class LineItemTransformer implements LineItemTransformerInterface
     private NameValuePairsTransformerInterface $nameValuePairsTransformer;
     private TaxesTransformerInterface $taxesTransformer;
 
-    public function __construct(AmountTransformerInterface $amountTransformer, AppliedPromotionsTransformerInterface $appliedPromotionsTransformer, DeliveryCostTransformerInterface $deliveryCostTransformer, EbayCollectAndRemitTaxesTransformerInterface $ebayCollectAndRemitTaxesTransformer, EbayCollectedChargesTransformerInterface $ebayCollectedChargesTransformer, GiftDetailsTransformerInterface $giftDetailsTransformer, ItemLocationTransformerInterface $itemLocationTransformer, LineItemFulfillmentInstructionsTransformerInterface $lineItemFulfillmentInstructionsTransformer, LineItemPropertiesTransformerInterface $lineItemPropertiesTransformer, LineItemRefundsTransformerInterface $lineItemRefundsTransformer, LinkedOrderLineItemsTransformerInterface $linkedOrderLineItemsTransformer, NameValuePairsTransformerInterface $nameValuePairsTransformer, TaxesTransformerInterface $taxesTransformer)
+    public function __construct(AmountTransformerInterface $amountTransformer, AppliedPromotionsTransformerInterface $appliedPromotionsTransformer, DeliveryCostTransformerInterface $deliveryCostTransformer, EbayCollectAndRemitTaxesTransformerInterface $ebayCollectAndRemitTaxesTransformer, EbayCollectedChargesTransformerInterface $ebayCollectedChargesTransformer, GiftDetailsTransformerInterface $giftDetailsTransformer, ItemLocationTransformerInterface $itemLocationTransformer, LineItemFulfillmentInstructionsTransformerInterface $lineItemFulfillmentInstructionsTransformer, LineItemPropertiesTransformerInterface $lineItemPropertiesTransformer, LineItemRefundsTransformerInterface $lineItemRefundsTransformer, LinkedOrderLineItemsTransformerInterface $linkedOrderLineItemsTransformer, NameValuePairsTransformerInterface $nameValuePairsTransformer, TaxesTransformerInterface $taxesTransformer, ?PropertiesTransformerInterface $compatibilityPropertiesTransformer = null)
     {
         $this->amountTransformer = $amountTransformer;
         $this->appliedPromotionsTransformer = $appliedPromotionsTransformer;
@@ -42,6 +43,7 @@ final class LineItemTransformer implements LineItemTransformerInterface
         $this->linkedOrderLineItemsTransformer = $linkedOrderLineItemsTransformer;
         $this->nameValuePairsTransformer = $nameValuePairsTransformer;
         $this->taxesTransformer = $taxesTransformer;
+        $this->compatibilityPropertiesTransformer = $compatibilityPropertiesTransformer;
     }
 
     /**
@@ -52,6 +54,7 @@ final class LineItemTransformer implements LineItemTransformerInterface
         $lineItem = new LineItem();
 
         $this->applyAppliedPromotions($lineItem, $data);
+        $this->applyCompatibilityProperties($lineItem, $data);
         $this->applyDeliveryCost($lineItem, $data);
         $this->applyDiscountedLineItemCost($lineItem, $data);
         $this->applyEbayCollectAndRemitTaxes($lineItem, $data);
@@ -92,6 +95,23 @@ final class LineItemTransformer implements LineItemTransformerInterface
             return;
         }
         $lineItem->setAppliedPromotions($this->appliedPromotionsTransformer->transform($data[self::KEY_APPLIED_PROMOTIONS]));
+    }
+
+    /**
+     * @phpstan-param mixed[] $data
+     */
+    private function applyCompatibilityProperties(LineItem $lineItem, array $data): void
+    {
+        if (null === $this->compatibilityPropertiesTransformer) {
+            return;
+        }
+        if (empty($data[self::KEY_COMPATIBILITY_PROPERTIES])) {
+            return;
+        }
+        if (!is_array($data[self::KEY_COMPATIBILITY_PROPERTIES])) {
+            return;
+        }
+        $lineItem->setCompatibilityProperties($this->compatibilityPropertiesTransformer->transform($data[self::KEY_COMPATIBILITY_PROPERTIES]));
     }
 
     /**

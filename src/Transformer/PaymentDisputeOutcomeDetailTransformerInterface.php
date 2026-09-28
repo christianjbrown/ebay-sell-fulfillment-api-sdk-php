@@ -8,6 +8,7 @@ use ChristianBrown\EBay\SellFulfillment\Model\PaymentDisputeOutcomeDetailInterfa
 
 interface PaymentDisputeOutcomeDetailTransformerInterface
 {
+    public const string KEY_DONATION_CREDIT_AMOUNT = 'donationCreditAmount';
     public const string KEY_FEES = 'fees';
     public const string KEY_PROTECTED_AMOUNT = 'protectedAmount';
     public const string KEY_PROTECTION_STATUS = 'protectionStatus';

@@ -6,12 +6,16 @@ namespace ChristianBrown\EBay\SellFulfillment\Model;
 
 interface InfoFromBuyerInterface
 {
+    public function getContentOnHold(): ?bool;
+
     public function getNote(): ?string;
 
     /**
      * @return array<int, TrackingInfoInterface>
      */
     public function getReturnShipmentTracking(): array;
+
+    public function setContentOnHold(?bool $value): self;
 
     public function setNote(?string $value): self;
 

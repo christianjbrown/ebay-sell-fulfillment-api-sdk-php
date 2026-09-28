@@ -8,10 +8,12 @@ use ChristianBrown\EBay\SellFulfillment\Model\LineItemFulfillmentInstructionsInt
 
 interface LineItemFulfillmentInstructionsTransformerInterface
 {
+    public const string KEY_DESTINATION_TIME_ZONE = 'destinationTimeZone';
     public const string KEY_GUARANTEED_DELIVERY = 'guaranteedDelivery';
     public const string KEY_MAX_ESTIMATED_DELIVERY_DATE = 'maxEstimatedDeliveryDate';
     public const string KEY_MIN_ESTIMATED_DELIVERY_DATE = 'minEstimatedDeliveryDate';
     public const string KEY_SHIP_BY_DATE = 'shipByDate';
+    public const string KEY_SOURCE_TIME_ZONE = 'sourceTimeZone';
 
     /**
      * @param mixed[] $data

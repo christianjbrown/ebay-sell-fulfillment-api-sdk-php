@@ -6,7 +6,7 @@ A strongly-typed PHP client for the [eBay Sell Fulfillment API](https://develope
 
 `getOrders` returns roughly **two years** of order history, which makes it the practical way to reconstruct lifetime sold counts per listing: every `LineItem` carries its `legacyItemId`, `lineItemId`, `sku`, `quantity`, `title` and `lineItemCost`, so aggregating `quantity` by `legacyItemId` gives a sold count that survives the listing ending.
 
-> :warning: **Only `getOrders` has been exercised against live eBay traffic.** The rest is built strictly to eBay's published OpenAPI contract (`sell_fulfillment` v1.20.0). See [Live traffic](#live-traffic) for what has been confirmed and what to smoke-test next.
+> :warning: **Only `getOrders` has been exercised against live eBay traffic.** The rest is built strictly to eBay's published OpenAPI contract (`sell_fulfillment` v1.20.6). See [Live traffic](#live-traffic) for what has been confirmed and what to smoke-test next.
 
 ### Supported endpoints
 

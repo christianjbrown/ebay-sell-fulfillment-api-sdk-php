@@ -16,10 +16,13 @@ use ChristianBrown\EBay\SellFulfillment\Transformer\AddressTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AmountTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AppliedPromotionsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AppliedPromotionTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\AppointmentDetailsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\BuyerTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelRequestsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelRequestTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelStatusTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ChargesTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ChargeTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\DeliveryCostTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\EbayCollectAndRemitTaxesTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\EbayCollectAndRemitTaxTransformer;
@@ -59,6 +62,8 @@ use ChristianBrown\EBay\SellFulfillment\Transformer\PickupStepTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\PostSaleAuthenticationProgramTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\PricingSummaryTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\ProgramTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\PropertiesTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\PropertyTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\RefundTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\SellerActionsToReleaseTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\SellerActionToReleaseTransformer;
@@ -182,6 +187,33 @@ final class OrderServiceRegistrar implements ServiceRegistrarInterface
                 ]
             );
 
+        $container->register(SellFulfillmentInterface::SERVICE_PROPERTY_TRANSFORMER, PropertyTransformer::class);
+
+        $container->register(SellFulfillmentInterface::SERVICE_PROPERTIES_TRANSFORMER, PropertiesTransformer::class)
+            ->setArguments(
+                [
+                    $container->getDefinition(SellFulfillmentInterface::SERVICE_PROPERTY_TRANSFORMER),
+                    $container->getDefinition(SellFulfillmentInterface::SERVICE_ARRAY_SHAPE_GUARD),
+                ]
+            );
+
+        $container->register(SellFulfillmentInterface::SERVICE_CHARGE_TRANSFORMER, ChargeTransformer::class)
+            ->setArguments(
+                [
+                    $container->getDefinition(SellFulfillmentInterface::SERVICE_AMOUNT_TRANSFORMER),
+                ]
+            );
+
+        $container->register(SellFulfillmentInterface::SERVICE_CHARGES_TRANSFORMER, ChargesTransformer::class)
+            ->setArguments(
+                [
+                    $container->getDefinition(SellFulfillmentInterface::SERVICE_CHARGE_TRANSFORMER),
+                    $container->getDefinition(SellFulfillmentInterface::SERVICE_ARRAY_SHAPE_GUARD),
+                ]
+            );
+
+        $container->register(SellFulfillmentInterface::SERVICE_APPOINTMENT_DETAILS_TRANSFORMER, AppointmentDetailsTransformer::class);
+
         $container->register(SellFulfillmentInterface::SERVICE_PICKUP_STEP_TRANSFORMER, PickupStepTransformer::class);
 
         $container->register(SellFulfillmentInterface::SERVICE_SHIPPING_STEP_TRANSFORMER, ShippingStepTransformer::class)
@@ -197,6 +229,7 @@ final class OrderServiceRegistrar implements ServiceRegistrarInterface
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_ADDRESS_TRANSFORMER),
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_PICKUP_STEP_TRANSFORMER),
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_SHIPPING_STEP_TRANSFORMER),
+                    $container->getDefinition(SellFulfillmentInterface::SERVICE_APPOINTMENT_DETAILS_TRANSFORMER),
                 ]
             );
 
@@ -252,6 +285,7 @@ final class OrderServiceRegistrar implements ServiceRegistrarInterface
             ->setArguments(
                 [
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_AMOUNT_TRANSFORMER),
+                    $container->getDefinition(SellFulfillmentInterface::SERVICE_CHARGES_TRANSFORMER),
                 ]
             );
 
@@ -335,6 +369,7 @@ final class OrderServiceRegistrar implements ServiceRegistrarInterface
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_LINKED_ORDER_LINE_ITEMS_TRANSFORMER),
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_NAME_VALUE_PAIRS_TRANSFORMER),
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_TAXES_TRANSFORMER),
+                    $container->getDefinition(SellFulfillmentInterface::SERVICE_PROPERTIES_TRANSFORMER),
                 ]
             );
 

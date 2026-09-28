@@ -11,6 +11,11 @@ interface LineItemInterface
      */
     public function getAppliedPromotions(): array;
 
+    /**
+     * @return array<int, PropertyInterface>
+     */
+    public function getCompatibilityProperties(): array;
+
     public function getDeliveryCost(): ?DeliveryCostInterface;
 
     public function getDiscountedLineItemCost(): ?AmountInterface;
@@ -78,6 +83,11 @@ interface LineItemInterface
      * @param array<int, AppliedPromotionInterface> $value
      */
     public function setAppliedPromotions(array $value): self;
+
+    /**
+     * @param array<int, PropertyInterface> $value
+     */
+    public function setCompatibilityProperties(array $value): self;
 
     public function setDeliveryCost(?DeliveryCostInterface $value): self;
 

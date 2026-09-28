@@ -6,12 +6,18 @@ namespace ChristianBrown\EBay\SellFulfillment\Model;
 
 final class PaymentDisputeOutcomeDetail implements PaymentDisputeOutcomeDetailInterface
 {
+    private ?SimpleAmountInterface $donationCreditAmount = null;
     private ?SimpleAmountInterface $fees = null;
     private ?SimpleAmountInterface $protectedAmount = null;
     private ?string $protectionStatus = null;
     private ?string $reasonForClosure = null;
     private ?SimpleAmountInterface $recoupAmount = null;
     private ?SimpleAmountInterface $totalFeeCredit = null;
+
+    public function getDonationCreditAmount(): ?SimpleAmountInterface
+    {
+        return $this->donationCreditAmount;
+    }
 
     public function getFees(): ?SimpleAmountInterface
     {
@@ -41,6 +47,13 @@ final class PaymentDisputeOutcomeDetail implements PaymentDisputeOutcomeDetailIn
     public function getTotalFeeCredit(): ?SimpleAmountInterface
     {
         return $this->totalFeeCredit;
+    }
+
+    public function setDonationCreditAmount(?SimpleAmountInterface $value): PaymentDisputeOutcomeDetailInterface
+    {
+        $this->donationCreditAmount = $value;
+
+        return $this;
     }
 
     public function setFees(?SimpleAmountInterface $value): PaymentDisputeOutcomeDetailInterface

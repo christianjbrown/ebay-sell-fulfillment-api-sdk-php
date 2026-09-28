@@ -19,12 +19,28 @@ final class LineItemFulfillmentInstructionsTransformer implements LineItemFulfil
     {
         $lineItemFulfillmentInstructions = new LineItemFulfillmentInstructions();
 
+        self::applyDestinationTimeZone($lineItemFulfillmentInstructions, $data);
         self::applyGuaranteedDelivery($lineItemFulfillmentInstructions, $data);
         self::applyMaxEstimatedDeliveryDate($lineItemFulfillmentInstructions, $data);
         self::applyMinEstimatedDeliveryDate($lineItemFulfillmentInstructions, $data);
         self::applyShipByDate($lineItemFulfillmentInstructions, $data);
+        self::applySourceTimeZone($lineItemFulfillmentInstructions, $data);
 
         return $lineItemFulfillmentInstructions;
+    }
+
+    /**
+     * @phpstan-param mixed[] $data
+     */
+    private static function applyDestinationTimeZone(LineItemFulfillmentInstructions $lineItemFulfillmentInstructions, array $data): void
+    {
+        if (empty($data[self::KEY_DESTINATION_TIME_ZONE])) {
+            return;
+        }
+        if (!is_string($data[self::KEY_DESTINATION_TIME_ZONE])) {
+            return;
+        }
+        $lineItemFulfillmentInstructions->setDestinationTimeZone($data[self::KEY_DESTINATION_TIME_ZONE]);
     }
 
     /**
@@ -81,5 +97,19 @@ final class LineItemFulfillmentInstructionsTransformer implements LineItemFulfil
             return;
         }
         $lineItemFulfillmentInstructions->setShipByDate($data[self::KEY_SHIP_BY_DATE]);
+    }
+
+    /**
+     * @phpstan-param mixed[] $data
+     */
+    private static function applySourceTimeZone(LineItemFulfillmentInstructions $lineItemFulfillmentInstructions, array $data): void
+    {
+        if (empty($data[self::KEY_SOURCE_TIME_ZONE])) {
+            return;
+        }
+        if (!is_string($data[self::KEY_SOURCE_TIME_ZONE])) {
+            return;
+        }
+        $lineItemFulfillmentInstructions->setSourceTimeZone($data[self::KEY_SOURCE_TIME_ZONE]);
     }
 }
