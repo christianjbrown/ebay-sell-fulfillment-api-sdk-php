@@ -26,12 +26,15 @@ interface SellFulfillmentInterface
     public const string SERVICE_API_REQUEST_SENDER = 'ebay_sell_fulfillment.api_request_sender';
     public const string SERVICE_APPLIED_PROMOTION_TRANSFORMER = 'ebay_sell_fulfillment.transformer.applied_promotion_transformer';
     public const string SERVICE_APPLIED_PROMOTIONS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.applied_promotions_transformer';
+    public const string SERVICE_APPOINTMENT_DETAILS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.appointment_details_transformer';
     public const string SERVICE_ARRAY_SHAPE_GUARD = 'ebay_sell_fulfillment.transformer.array_shape_guard';
     public const string SERVICE_ARRAY_TO_JSON_TRANSFORMER = 'ebay_sell_fulfillment.array_to_json_transformer';
     public const string SERVICE_BUYER_TRANSFORMER = 'ebay_sell_fulfillment.transformer.buyer_transformer';
     public const string SERVICE_CANCEL_REQUEST_TRANSFORMER = 'ebay_sell_fulfillment.transformer.cancel_request_transformer';
     public const string SERVICE_CANCEL_REQUESTS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.cancel_requests_transformer';
     public const string SERVICE_CANCEL_STATUS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.cancel_status_transformer';
+    public const string SERVICE_CHARGE_TRANSFORMER = 'ebay_sell_fulfillment.transformer.charge_transformer';
+    public const string SERVICE_CHARGES_TRANSFORMER = 'ebay_sell_fulfillment.transformer.charges_transformer';
     public const string SERVICE_CONTEST_PAYMENT_DISPUTE_REQUEST_SERIALIZER = 'ebay_sell_fulfillment.serializer.contest_payment_dispute_request_serializer';
     public const string SERVICE_CREDENTIALS = 'ebay_sell_fulfillment.auth.credentials';
     public const string SERVICE_DELIVERY_COST_TRANSFORMER = 'ebay_sell_fulfillment.transformer.delivery_cost_transformer';
@@ -116,6 +119,8 @@ interface SellFulfillmentInterface
     public const string SERVICE_POST_SALE_AUTHENTICATION_PROGRAM_TRANSFORMER = 'ebay_sell_fulfillment.transformer.post_sale_authentication_program_transformer';
     public const string SERVICE_PRICING_SUMMARY_TRANSFORMER = 'ebay_sell_fulfillment.transformer.pricing_summary_transformer';
     public const string SERVICE_PROGRAM_TRANSFORMER = 'ebay_sell_fulfillment.transformer.program_transformer';
+    public const string SERVICE_PROPERTIES_TRANSFORMER = 'ebay_sell_fulfillment.transformer.properties_transformer';
+    public const string SERVICE_PROPERTY_TRANSFORMER = 'ebay_sell_fulfillment.transformer.property_transformer';
     public const string SERVICE_REFRESH_TOKEN_MANAGER = 'ebay_sell_fulfillment.oauth.refresh_token_manager';
     public const string SERVICE_REFUND_ITEM_SERIALIZER = 'ebay_sell_fulfillment.serializer.refund_item_serializer';
     public const string SERVICE_REFUND_ITEMS_SERIALIZER = 'ebay_sell_fulfillment.serializer.refund_items_serializer';
