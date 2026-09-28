@@ -32,6 +32,7 @@ final class InfoFromBuyerTransformerTest extends TestCase
             );
 
         $data = [
+            InfoFromBuyerTransformerInterface::KEY_CONTENT_ON_HOLD => true,
             InfoFromBuyerTransformerInterface::KEY_NOTE => 'test-note',
             InfoFromBuyerTransformerInterface::KEY_RETURN_SHIPMENT_TRACKING => $returnShipmentTrackingData,
         ];
@@ -40,8 +41,18 @@ final class InfoFromBuyerTransformerTest extends TestCase
 
         $actual = $transformer->transform($data);
 
+        self::assertTrue($actual->getContentOnHold());
         self::assertSame('test-note', $actual->getNote());
         self::assertSame($returnShipmentTracking, $actual->getReturnShipmentTracking());
+    }
+
+    public function testTransformContentOnHoldFalse(): void
+    {
+        $transformer = $this->buildTransformer();
+
+        $actual = $transformer->transform([InfoFromBuyerTransformerInterface::KEY_CONTENT_ON_HOLD => false]);
+
+        self::assertFalse($actual->getContentOnHold());
     }
 
     /**
@@ -69,23 +80,26 @@ final class InfoFromBuyerTransformerTest extends TestCase
      * @param array<string, mixed> $data
      */
     #[DataProvider('provideTransformScalarFieldStatesCases')]
-    public function testTransformScalarFieldStates(array $data, ?string $expectedNote): void
+    public function testTransformScalarFieldStates(array $data, ?bool $expectedContentOnHold, ?string $expectedNote): void
     {
         $transformer = $this->buildTransformer();
 
         $actual = $transformer->transform($data);
 
+        self::assertSame($expectedContentOnHold, $actual->getContentOnHold());
         self::assertSame($expectedNote, $actual->getNote());
     }
 
     /**
-     * @return iterable<string, array{array<string, mixed>, ?string}>
+     * @return iterable<string, array{array<string, mixed>, ?bool, ?string}>
      */
     public static function provideTransformScalarFieldStatesCases(): iterable
     {
-        yield 'allAbsent' => [[], null];
+        yield 'allAbsent' => [[], null, null];
 
-        yield 'noteWrongType' => [[InfoFromBuyerTransformerInterface::KEY_NOTE => 42], null];
+        yield 'contentOnHoldWrongType' => [[InfoFromBuyerTransformerInterface::KEY_CONTENT_ON_HOLD => 'not-a-bool'], null, null];
+
+        yield 'noteWrongType' => [[InfoFromBuyerTransformerInterface::KEY_NOTE => 42], null, null];
     }
 
     private function buildTransformer(): InfoFromBuyerTransformer

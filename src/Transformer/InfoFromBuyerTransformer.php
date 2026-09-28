@@ -8,6 +8,7 @@ use ChristianBrown\EBay\SellFulfillment\Model\InfoFromBuyer;
 use ChristianBrown\EBay\SellFulfillment\Model\InfoFromBuyerInterface;
 
 use function is_array;
+use function is_bool;
 use function is_string;
 
 final class InfoFromBuyerTransformer implements InfoFromBuyerTransformerInterface
@@ -26,10 +27,25 @@ final class InfoFromBuyerTransformer implements InfoFromBuyerTransformerInterfac
     {
         $infoFromBuyer = new InfoFromBuyer();
 
+        self::applyContentOnHold($infoFromBuyer, $data);
         self::applyNote($infoFromBuyer, $data);
         $this->applyReturnShipmentTracking($infoFromBuyer, $data);
 
         return $infoFromBuyer;
+    }
+
+    /**
+     * @phpstan-param mixed[] $data
+     */
+    private static function applyContentOnHold(InfoFromBuyer $infoFromBuyer, array $data): void
+    {
+        if (!isset($data[self::KEY_CONTENT_ON_HOLD])) {
+            return;
+        }
+        if (!is_bool($data[self::KEY_CONTENT_ON_HOLD])) {
+            return;
+        }
+        $infoFromBuyer->setContentOnHold($data[self::KEY_CONTENT_ON_HOLD]);
     }
 
     /**
