@@ -14,7 +14,14 @@ use ChristianBrown\EBay\SellFulfillment\Api\ShippingFulfillmentApi;
 use ChristianBrown\EBay\SellFulfillment\Api\ShippingFulfillmentApiInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\Credentials;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
+use ChristianBrown\EBay\SellFulfillment\ContainerFactory;
+use ChristianBrown\EBay\SellFulfillment\Http\ApiHost;
 use ChristianBrown\EBay\SellFulfillment\Http\MultipartFormDataBuilder;
+use ChristianBrown\EBay\SellFulfillment\Registrar\CoreServiceRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\OrderServiceRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\PaymentDisputeEvidenceServiceRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\PaymentDisputeServiceRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\ShippingFulfillmentServiceRegistrar;
 use ChristianBrown\EBay\SellFulfillment\SellFulfillment;
 use ChristianBrown\EBay\SellFulfillment\Serializer\AcceptPaymentDisputeRequestSerializer;
 use ChristianBrown\EBay\SellFulfillment\Serializer\AddEvidencePaymentDisputeRequestSerializer;
@@ -39,6 +46,7 @@ use ChristianBrown\EBay\SellFulfillment\Transformer\AddressTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AmountTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AppliedPromotionsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\AppliedPromotionTransformer;
+use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuard;
 use ChristianBrown\EBay\SellFulfillment\Transformer\BuyerTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelRequestsTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\CancelRequestTransformer;
@@ -141,11 +149,15 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(AmountTransformer::class)]
 #[UsesClass(AppliedPromotionTransformer::class)]
 #[UsesClass(AppliedPromotionsTransformer::class)]
+#[UsesClass(ApiHost::class)]
+#[UsesClass(ArrayShapeGuard::class)]
 #[UsesClass(BuyerTransformer::class)]
 #[UsesClass(CancelRequestTransformer::class)]
 #[UsesClass(CancelRequestsTransformer::class)]
 #[UsesClass(CancelStatusTransformer::class)]
+#[UsesClass(ContainerFactory::class)]
 #[UsesClass(ContestPaymentDisputeRequestSerializer::class)]
+#[UsesClass(CoreServiceRegistrar::class)]
 #[UsesClass(Credentials::class)]
 #[UsesClass(DeliveryCostTransformer::class)]
 #[UsesClass(DisputeAmountTransformer::class)]
@@ -204,6 +216,7 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(OrderRefundTransformer::class)]
 #[UsesClass(OrderRefundsTransformer::class)]
 #[UsesClass(OrderSearchPagedCollectionTransformer::class)]
+#[UsesClass(OrderServiceRegistrar::class)]
 #[UsesClass(OrderTransformer::class)]
 #[UsesClass(OrdersTransformer::class)]
 #[UsesClass(PaymentDisputeActivitiesTransformer::class)]
@@ -211,7 +224,9 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(PaymentDisputeActivityTransformer::class)]
 #[UsesClass(PaymentDisputeApi::class)]
 #[UsesClass(PaymentDisputeEvidenceApi::class)]
+#[UsesClass(PaymentDisputeEvidenceServiceRegistrar::class)]
 #[UsesClass(PaymentDisputeOutcomeDetailTransformer::class)]
+#[UsesClass(PaymentDisputeServiceRegistrar::class)]
 #[UsesClass(PaymentDisputeSummariesTransformer::class)]
 #[UsesClass(PaymentDisputeSummaryTransformer::class)]
 #[UsesClass(PaymentDisputeTransformer::class)]
@@ -237,6 +252,7 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(ShippingFulfillmentApi::class)]
 #[UsesClass(ShippingFulfillmentDetailsSerializer::class)]
 #[UsesClass(ShippingFulfillmentPagedCollectionTransformer::class)]
+#[UsesClass(ShippingFulfillmentServiceRegistrar::class)]
 #[UsesClass(ShippingFulfillmentTransformer::class)]
 #[UsesClass(ShippingFulfillmentsTransformer::class)]
 #[UsesClass(ShippingStepTransformer::class)]

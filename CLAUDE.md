@@ -62,34 +62,47 @@ Layers under `src/`, mirrored 1:1 under `tests/`, plus the top-level `SellFulfil
 `ChristianBrown\EBay\SellFulfillment\` → `src/`, `ChristianBrown\EBay\SellFulfillment\Tests\` →
 `tests/`. Note the StudlyCase `EBay`.
 
-- **`SellFulfillment`** (`src/SellFulfillment.php`) — the facade. Constructed with
-  `(string $clientId, string $clientSecret, string $marketplaceId, TtlAwareKeyValueStoreInterface
-  $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, ?LockInterface $lock = null)`, it
-  builds a `ContainerBuilder`, registers the core services, then the transformer chains, the
-  serializer chains, and the API clients last (registration order matters — a service must be
-  registered before another wires a `Reference`/`Definition` to it). Service ids are `SERVICE_*`
-  constants on `SellFulfillmentInterface`. Getters are PHPStan-safe: assign
-  `$this->container->get(...)` to a local `$service` with a `/** @var XApiInterface $service */`
-  docblock, then return it.
+- **`SellFulfillment`** (`src/SellFulfillment.php`) — the facade, and the library's only composition
+  root. Constructed with `(string $clientId, string $clientSecret, string $marketplaceId,
+  TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore,
+  ?LockInterface $lock = null, ?ApiHostInterface $apiHost = null)`, it builds a `ContainerBuilder`
+  through `ContainerFactory` by running one `Registrar\*ServiceRegistrar` per resource group
+  (`CoreServiceRegistrar` for the API client, auth and every shared transformer; then
+  `OrderServiceRegistrar`, `ShippingFulfillmentServiceRegistrar`, `PaymentDisputeServiceRegistrar` and
+  `PaymentDisputeEvidenceServiceRegistrar`). `CoreServiceRegistrar` must run first — the others only
+  reference definitions it registers. Adding an API group means adding a registrar to that array, not
+  editing a shared method. Service ids are `SERVICE_*` constants on `SellFulfillmentInterface`.
+  Getters are PHPStan-safe: assign `$this->container->get(...)` to a local `$service` with a
+  `/** @var XApiInterface $service */` docblock, then return it.
+- **`Registrar/`** — `ServiceRegistrarInterface` declares one method, `register(ContainerBuilder
+  $container): void`. Each implementation owns one resource group's transformer chain, serializer
+  chain, and its `Api` client registration; `ContainerFactory` (`src/ContainerFactory.php`) just runs
+  the list of registrars it is given against a fresh `ContainerBuilder`.
+- **`Http/ApiHost`** — the injectable host. `ApiHostInterface` exposes `getApiUrl()` (order and
+  shipping fulfillment), `getApizUrl()` (payment dispute) and `getOAuthTokenUrl()`, each defaulting to
+  the production host; `SellFulfillment`'s optional last constructor argument overrides it, for
+  example to point at eBay's sandbox (`api.sandbox.ebay.com` / `apiz.sandbox.ebay.com`).
 - **`Auth/`** — `Credentials`, a value object over the OAuth `RefreshTokenManager`. `toHeaders()`
   returns the four headers every request needs: `Authorization: Bearer <token>`,
   `X-EBAY-C-MARKETPLACE-ID`, `Content-Type: application/json` and `Accept: application/json`.
-  eBay's token endpoint (`SellFulfillmentInterface::OAUTH_TOKEN_URL`) authenticates with HTTP Basic
-  (App ID + Cert ID) and **rotates the refresh token on every refresh**, so the refresh token lives
-  in a persistent `KeyValueStoreInterface` and the access token in a
-  `TtlAwareKeyValueStoreInterface`; the optional `LockInterface` serialises concurrent refreshes.
+  eBay's token endpoint (`ApiHostInterface::getOAuthTokenUrl()`, defaulting to
+  `SellFulfillmentInterface::OAUTH_TOKEN_URL`) authenticates with HTTP Basic (App ID + Cert ID) and
+  **rotates the refresh token on every refresh**, so the refresh token lives in a persistent
+  `KeyValueStoreInterface` and the access token in a `TtlAwareKeyValueStoreInterface`; the optional
+  `LockInterface` serialises concurrent refreshes.
 - **`Api/`** — one `final` client per resource group (`OrderApi`, `ShippingFulfillmentApi`,
-  `PaymentDisputeApi`, `PaymentDisputeEvidenceApi`), each implementing its interface which
-  `extends ApiInterface`. Full URLs live in `API_URL*` constants on the interface. **Order and
-  fulfillment calls go to `https://api.ebay.com`; every payment-dispute call goes to
-  `https://apiz.ebay.com`** — that split is real, not a typo. Constructor order: the request
-  sender(s), then the transformers, then the serializers, then the `CredentialsInterface`. `GET`
-  methods use `JsonApiRequestSenderInterface` and cache by a derived key with a `bool $skipCache`
-  escape hatch. Endpoints that answer `204`/`201` with an **empty body** (`createShippingFulfillment`,
-  `acceptPaymentDispute`, `contestPaymentDispute`, `updateEvidence`) or with **non-JSON bytes**
-  (`fetchEvidenceContent`) use the raw `ApiRequestSenderInterface` instead, encoding the request body
-  through api-client's `ArrayToJsonTransformerInterface`, because the JSON sender cannot decode an
-  empty body.
+  `PaymentDisputeApi`, `PaymentDisputeEvidenceApi`). Full production URLs are still kept on the
+  interface as `API_URL*` constants for backward compatibility, but requests are built from the
+  path-only `API_PATH*` constants plus the injected `ApiHostInterface`. **Order and fulfillment calls
+  go to `getApiUrl()` (`https://api.ebay.com`); every payment-dispute call goes to `getApizUrl()`
+  (`https://apiz.ebay.com`)** — that split is real, not a typo. Constructor order: the request
+  sender(s), then the transformers, then the serializers, then the `CredentialsInterface`, then the
+  `ApiHostInterface`. `GET` methods use `JsonApiRequestSenderInterface` and cache by a derived key
+  with a `bool $skipCache` escape hatch. Endpoints that answer `204`/`201` with an **empty body**
+  (`createShippingFulfillment`, `acceptPaymentDispute`, `contestPaymentDispute`, `updateEvidence`) or
+  with **non-JSON bytes** (`fetchEvidenceContent`) use the raw `ApiRequestSenderInterface` instead,
+  encoding the request body through api-client's `ArrayToJsonTransformerInterface`, because the JSON
+  sender cannot decode an empty body.
 - **`Model/`** — plain, mutable typed DTOs with getters and fluent setters; one per schema in the
   contract. Two schemas are singularised because they name a single object: eBay's `OrderLineItems`
   is `OrderLineItem` and `SellerActionsToRelease` is `SellerActionToRelease` (their collection
@@ -97,7 +110,10 @@ Layers under `src/`, mirrored 1:1 under `tests/`, plus the top-level `SellFulfil
 - **`Transformer/`** — turn raw decoded-JSON arrays into `Model` objects. Nested transformers are
   constructor-injected and composed into a chain. Plural transformers wrap the singular one for
   arrays; the shared `StringsTransformer` handles arrays of plain strings
-  (`Order::fulfillmentHrefs`, `PaymentDispute::availableChoices`, `Error::inputRefIds`).
+  (`Order::fulfillmentHrefs`, `PaymentDispute::availableChoices`, `Error::inputRefIds`). Every
+  collection transformer constructor-injects `ArrayShapeGuardInterface`
+  (`src/Transformer/ArrayShapeGuard.php`) and calls its `assertArray(array $data, string $arrayName):
+  void` before looping, instead of repeating the `UnexpectedResponseException` check inline.
 - **`Serializer/`** — the mirror image, turning request `Model` objects into the arrays eBay expects.
   One `serialize(XInterface $x): array` per request schema, plus plural serializers for arrays.
 - **`Filter/`** — `OrderFilter` renders `getOrders`' `filter` query-string value
