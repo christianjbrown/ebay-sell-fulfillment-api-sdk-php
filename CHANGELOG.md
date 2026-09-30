@@ -6,6 +6,12 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-09-30
+
+### Changed
+
+- Allows christianjbrown/key-value-store 2.0 as well as 1.x. Nothing this package uses from it changed.
+
 ## [1.1.0] - 2026-09-28
 
 Brings the SDK up to date with eBay's `sell_fulfillment` v1.20.6. All additions are optional, so existing
@@ -44,6 +50,7 @@ First stable release.
 Only `getOrders` had been exercised against live eBay traffic at this release. The other operations follow
 eBay's published contract.
 
-[Unreleased]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/releases/tag/v1.0.0
