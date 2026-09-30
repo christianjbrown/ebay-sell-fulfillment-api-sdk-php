@@ -56,6 +56,12 @@ the build if line, method, class, branch or path coverage has dropped below 100%
 `composer fix-style` first, then `composer check-style`, then `composer stan`, then `composer test`
 before finishing.
 
+## Changelog
+
+`CHANGELOG.md` follows Keep a Changelog. A pull request that changes `src/` must add a line under
+`## [Unreleased]`; CI enforces it with `bin/php-changelog-check`. A release renames that section to the
+version and the date, and its text becomes the GitHub release notes.
+
 ## Architecture
 
 Layers under `src/`, mirrored 1:1 under `tests/`, plus the top-level `SellFulfillment` facade. PSR-4:

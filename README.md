@@ -239,6 +239,12 @@ Both live in `src/Exception/`. Request-level failures (network errors, non-2xx r
 
 Under the hood, `SellFulfillment` wires the clients, their transformer and serializer chains, and the OAuth refresh machinery through a [Symfony dependency-injection](https://symfony.com/doc/current/components/dependency_injection.html) container. If you don't want the container, you can build the same chains by hand — every class is `final`, takes its collaborators as constructor arguments, and implements a matching interface.
 
+## :memo: Changelog
+
+Notable changes in each release are listed in [CHANGELOG.md](CHANGELOG.md).
+
+
+
 ## :page_facing_up: License
 
 Released under the [MIT License](LICENSE).

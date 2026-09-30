@@ -1,0 +1,49 @@
+# Changelog
+
+All notable changes to this package are recorded here. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the package uses
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [Unreleased]
+
+## [1.1.0] - 2026-09-28
+
+Brings the SDK up to date with eBay's `sell_fulfillment` v1.20.6. All additions are optional, so existing
+calls keep working.
+
+### Added
+
+- `LineItem` carries `compatibilityProperties`.
+- eBay-collected charges are exposed through `EbayCollectedCharges::charges`.
+- Fulfillment start instructions carry `appointment` and `destinationTimeZone`, and line item fulfillment
+  instructions carry `destinationTimeZone` and `sourceTimeZone`.
+- `InfoFromBuyer` carries `contentOnHold`.
+- `PaymentDisputeOutcomeDetail` carries `donationCreditAmount`.
+- All 40 of eBay's marketplace ids are available as constants on `CredentialsInterface`, up from 9.
+
+## [1.0.0] - 2026-09-28
+
+First stable release.
+
+### Added
+
+- `SellFulfillment`, an entry point for the eBay Sell Fulfillment API. It returns typed model objects and
+  takes typed request objects for writes.
+- Orders: search and fetch orders, and issue a refund. `getOrders` returns about two years of history, and
+  each `LineItem` carries its `legacyItemId`, `lineItemId`, `sku`, `quantity`, `title` and `lineItemCost`.
+- Shipping fulfillments: list, fetch and create.
+- Payment disputes: fetch, summarise, read activity history, accept and contest, plus adding, updating,
+  fetching and uploading evidence.
+- OAuth2 user-token authentication using a refresh token, with the access token cached in a
+  `TtlAwareKeyValueStoreInterface` and the rotating refresh token kept in a `KeyValueStoreInterface`.
+- An optional `LockInterface` argument, so a refresh is serialised across processes and a rotating refresh
+  token is never spent twice.
+- An optional `ApiHostInterface` argument to target the sandbox or another host.
+- A single exception hierarchy, so callers do not depend on the underlying HTTP client.
+
+Only `getOrders` had been exercised against live eBay traffic at this release. The other operations follow
+eBay's published contract.
+
+[Unreleased]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.0.0...v1.1.0
+[1.0.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/releases/tag/v1.0.0
