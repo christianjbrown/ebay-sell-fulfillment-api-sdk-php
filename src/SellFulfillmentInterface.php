@@ -17,7 +17,6 @@ interface SellFulfillmentInterface
     public const string OAUTH_SCOPE_SELL_FULFILLMENT_READONLY = 'https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly';
     public const string OAUTH_TOKEN_URL = 'https://api.ebay.com/identity/v1/oauth2/token';
     public const string SERVICE_ACCEPT_PAYMENT_DISPUTE_REQUEST_SERIALIZER = 'ebay_sell_fulfillment.serializer.accept_payment_dispute_request_serializer';
-    public const string SERVICE_ACCESS_TOKEN_TRANSFORMER = 'ebay_sell_fulfillment.oauth.access_token_transformer';
     public const string SERVICE_ADD_EVIDENCE_PAYMENT_DISPUTE_REQUEST_SERIALIZER = 'ebay_sell_fulfillment.serializer.add_evidence_payment_dispute_request_serializer';
     public const string SERVICE_ADD_EVIDENCE_PAYMENT_DISPUTE_RESPONSE_TRANSFORMER = 'ebay_sell_fulfillment.transformer.add_evidence_payment_dispute_response_transformer';
     public const string SERVICE_ADDRESS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.address_transformer';
@@ -35,6 +34,7 @@ interface SellFulfillmentInterface
     public const string SERVICE_CANCEL_STATUS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.cancel_status_transformer';
     public const string SERVICE_CHARGE_TRANSFORMER = 'ebay_sell_fulfillment.transformer.charge_transformer';
     public const string SERVICE_CHARGES_TRANSFORMER = 'ebay_sell_fulfillment.transformer.charges_transformer';
+    public const string SERVICE_CLIENT_AUTHENTICATION = 'ebay_sell_fulfillment.oauth.client_authentication';
     public const string SERVICE_CONTEST_PAYMENT_DISPUTE_REQUEST_SERIALIZER = 'ebay_sell_fulfillment.serializer.contest_payment_dispute_request_serializer';
     public const string SERVICE_CREDENTIALS = 'ebay_sell_fulfillment.auth.credentials';
     public const string SERVICE_DELIVERY_COST_TRANSFORMER = 'ebay_sell_fulfillment.transformer.delivery_cost_transformer';

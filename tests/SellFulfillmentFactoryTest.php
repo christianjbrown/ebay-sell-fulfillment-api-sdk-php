@@ -154,6 +154,7 @@ use ChristianBrown\EBay\SellFulfillment\Transformer\TrackingInfoTransformer;
 use ChristianBrown\KeyValueStore\KeyValueStoreInterface;
 use ChristianBrown\KeyValueStore\TtlAwareKeyValueStoreInterface;
 use ChristianBrown\OAuth2Client\Lock\LockInterface;
+use ChristianBrown\OAuth2Client\Lock\NullLock;
 use PHPUnit\Framework\Attributes\CoversClass;
 use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
@@ -307,7 +308,7 @@ final class SellFulfillmentFactoryTest extends TestCase
             $this->credentials(),
             self::createStub(TtlAwareKeyValueStoreInterface::class),
             self::createStub(KeyValueStoreInterface::class),
-            null,
+            new NullLock(),
             new ApiHost('https://api.sandbox.ebay.com', 'https://apiz.sandbox.ebay.com', 'https://api.sandbox.ebay.com/identity/v1/oauth2/token'),
         );
 
@@ -380,6 +381,7 @@ final class SellFulfillmentFactoryTest extends TestCase
             $this->credentials(),
             self::createStub(TtlAwareKeyValueStoreInterface::class),
             self::createStub(KeyValueStoreInterface::class),
+            new NullLock(),
         );
     }
 

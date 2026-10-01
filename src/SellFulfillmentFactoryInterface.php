@@ -15,10 +15,10 @@ interface SellFulfillmentFactoryInterface
     /**
      * Builds a client that talks to eBay's production hosts.
      */
-    public function create(ApplicationCredentialsInterface $credentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, ?LockInterface $lock = null): SellFulfillmentInterface;
+    public function create(ApplicationCredentialsInterface $credentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, LockInterface $lock): SellFulfillmentInterface;
 
     /**
      * Builds a client that talks to the hosts the given {@see ApiHostInterface} names, for example eBay's sandbox.
      */
-    public function createForHost(ApplicationCredentialsInterface $credentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, ?LockInterface $lock, ApiHostInterface $apiHost): SellFulfillmentInterface;
+    public function createForHost(ApplicationCredentialsInterface $credentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, LockInterface $lock, ApiHostInterface $apiHost): SellFulfillmentInterface;
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace ChristianBrown\EBay\SellFulfillment\Registrar;
 
-use ChristianBrown\ApiClient\ApiClient;
+use ChristianBrown\ApiClient\ApiClientInterface;
 use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\ApiClient\Transformer\ArrayToJsonTransformer;
@@ -24,9 +24,10 @@ use ChristianBrown\EBay\SellFulfillment\Transformer\TrackingInfosTransformer;
 use ChristianBrown\EBay\SellFulfillment\Transformer\TrackingInfoTransformer;
 use ChristianBrown\KeyValueStore\KeyValueStoreInterface;
 use ChristianBrown\KeyValueStore\TtlAwareKeyValueStoreInterface;
+use ChristianBrown\OAuth2Client\Authentication\ClientSecretBasicAuthentication;
 use ChristianBrown\OAuth2Client\Lock\LockInterface;
-use ChristianBrown\OAuth2Client\RefreshTokenManager;
-use ChristianBrown\OAuth2Client\Transformer\AccessTokenTransformer;
+use ChristianBrown\OAuth2Client\RefreshTokenManagerFactoryInterface;
+use ChristianBrown\OAuth2Client\RefreshTokenManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Reference;
 
@@ -38,14 +39,18 @@ use Symfony\Component\DependencyInjection\Reference;
 final class CoreServiceRegistrar implements ServiceRegistrarInterface
 {
     private TtlAwareKeyValueStoreInterface $accessTokenStore;
+    private ApiClientInterface $apiClient;
     private ApiHostInterface $apiHost;
     private ApplicationCredentialsInterface $applicationCredentials;
-    private ?LockInterface $lock;
+    private LockInterface $lock;
+    private RefreshTokenManagerFactoryInterface $refreshTokenManagerFactory;
     private KeyValueStoreInterface $refreshTokenStore;
 
-    public function __construct(ApplicationCredentialsInterface $applicationCredentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, ?LockInterface $lock, ApiHostInterface $apiHost)
+    public function __construct(ApplicationCredentialsInterface $applicationCredentials, ApiClientInterface $apiClient, RefreshTokenManagerFactoryInterface $refreshTokenManagerFactory, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, LockInterface $lock, ApiHostInterface $apiHost)
     {
         $this->applicationCredentials = $applicationCredentials;
+        $this->apiClient = $apiClient;
+        $this->refreshTokenManagerFactory = $refreshTokenManagerFactory;
         $this->accessTokenStore = $accessTokenStore;
         $this->refreshTokenStore = $refreshTokenStore;
         $this->lock = $lock;
@@ -54,14 +59,14 @@ final class CoreServiceRegistrar implements ServiceRegistrarInterface
 
     public function register(ContainerBuilder $container): void
     {
-        self::registerApiClient($container);
+        $this->registerApiClient($container);
         $this->registerAuth($container);
         self::registerSharedTransformers($container);
     }
 
-    private static function registerApiClient(ContainerBuilder $container): void
+    private function registerApiClient(ContainerBuilder $container): void
     {
-        $container->register(SellFulfillmentInterface::SERVICE_API_CLIENT, ApiClient::class);
+        $container->set(SellFulfillmentInterface::SERVICE_API_CLIENT, $this->apiClient);
         $container->register(SellFulfillmentInterface::SERVICE_API_REQUEST_SENDER, ApiRequestSenderInterface::class)
             ->setFactory([new Reference(SellFulfillmentInterface::SERVICE_API_CLIENT), 'getApiRequestSender']);
         $container->register(SellFulfillmentInterface::SERVICE_JSON_API_REQUEST_SENDER, JsonApiRequestSenderInterface::class)
@@ -74,20 +79,24 @@ final class CoreServiceRegistrar implements ServiceRegistrarInterface
 
     private function registerAuth(ContainerBuilder $container): void
     {
-        $container->register(SellFulfillmentInterface::SERVICE_ACCESS_TOKEN_TRANSFORMER, AccessTokenTransformer::class);
-
         // eBay's token endpoint authenticates with HTTP Basic (App ID and Cert ID)
         // and rotates the refresh token on every refresh, so the refresh-token
         // store must persist and the optional lock serialises concurrent refreshes.
-        $container->register(SellFulfillmentInterface::SERVICE_REFRESH_TOKEN_MANAGER, RefreshTokenManager::class)
+        $container->register(SellFulfillmentInterface::SERVICE_CLIENT_AUTHENTICATION, ClientSecretBasicAuthentication::class)
+            ->setArguments([$this->applicationCredentials->getClientSecret()]);
+
+        // eBay's token endpoint authenticates with HTTP Basic (App ID and Cert ID)
+        // and rotates the refresh token on every refresh, so the refresh-token
+        // store must persist and the lock serialises concurrent refreshes.
+        $container->register(SellFulfillmentInterface::SERVICE_REFRESH_TOKEN_MANAGER, RefreshTokenManagerInterface::class)
+            ->setFactory([$this->refreshTokenManagerFactory, 'create'])
             ->setArguments(
                 [
-                    $container->getDefinition(SellFulfillmentInterface::SERVICE_JSON_API_REQUEST_SENDER),
+                    new Reference(SellFulfillmentInterface::SERVICE_JSON_API_REQUEST_SENDER),
                     $this->accessTokenStore,
                     $this->refreshTokenStore,
-                    $container->getDefinition(SellFulfillmentInterface::SERVICE_ACCESS_TOKEN_TRANSFORMER),
                     $this->apiHost->getOAuthTokenUrl(),
-                    $this->applicationCredentials->getClientSecret(),
+                    new Reference(SellFulfillmentInterface::SERVICE_CLIENT_AUTHENTICATION),
                     $this->lock,
                 ]
             );
@@ -95,7 +104,7 @@ final class CoreServiceRegistrar implements ServiceRegistrarInterface
         $container->register(SellFulfillmentInterface::SERVICE_CREDENTIALS, Credentials::class)
             ->setArguments(
                 [
-                    $container->getDefinition(SellFulfillmentInterface::SERVICE_REFRESH_TOKEN_MANAGER),
+                    new Reference(SellFulfillmentInterface::SERVICE_REFRESH_TOKEN_MANAGER),
                     $this->applicationCredentials->getClientId(),
                     $this->applicationCredentials->getMarketplaceId(),
                 ]

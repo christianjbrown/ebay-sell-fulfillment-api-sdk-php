@@ -47,26 +47,29 @@ You supply these to `SellFulfillmentFactory`, the entry point that builds a clie
 - a **`TtlAwareKeyValueStoreInterface`** to hold the current access token (an in-memory store is fine, it's re-fetched as needed),
 - a **`KeyValueStoreInterface`** holding your refresh token. This one must **persist**, because eBay rotates the refresh token on every refresh and the client writes the new value back.
 
-An optional fourth argument, a `LockInterface`, serialises the refresh across processes so a rotating refresh token is never spent by two refreshes at once. To override the hosts every request is built from, use `createForHost()` with an `ApiHostInterface`; see [Targeting the sandbox](#targeting-the-sandbox) below.
+The fourth argument, a `LockInterface`, serialises the refresh across processes so a rotating refresh token is never spent by two refreshes at once. Pass oauth2-client's `NullLock` when you have no lock. To override the hosts every request is built from, use `createForHost()` with an `ApiHostInterface`; see [Targeting the sandbox](#targeting-the-sandbox) below.
 
 ```php
 use ChristianBrown\EBay\SellFulfillment\Auth\ApplicationCredentials;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\SellFulfillmentFactory;
 use ChristianBrown\KeyValueStore\MemoryKeyValueStore;
+use ChristianBrown\OAuth2Client\Lock\NullLock;
+use Symfony\Component\Clock\NativeClock;
 
 // Access token: transient, an in-memory (TTL-aware) store is fine.
-$accessTokenStore = new MemoryKeyValueStore();
+$accessTokenStore = new MemoryKeyValueStore(new NativeClock());
 
 // Refresh token: must persist and already hold a valid refresh token.
 // Any KeyValueStoreInterface works (DatabaseKeyValueStore, GoogleSecretKeyValueStore, ...).
-$refreshTokenStore = new MemoryKeyValueStore();
+$refreshTokenStore = new MemoryKeyValueStore(new NativeClock());
 $refreshTokenStore->setValue('your-seed-refresh-token');
 
 $sellFulfillment = (new SellFulfillmentFactory())->create(
     new ApplicationCredentials('your-app-id', 'your-cert-id', CredentialsInterface::MARKETPLACE_ID_EBAY_GB),
     $accessTokenStore,
-    $refreshTokenStore
+    $refreshTokenStore,
+    new NullLock()
 );
 
 $orderApi = $sellFulfillment->getOrderApi();   // OrderApiInterface
@@ -91,7 +94,7 @@ $sellFulfillment = (new SellFulfillmentFactory())->createForHost(
     new ApplicationCredentials('your-sandbox-app-id', 'your-sandbox-cert-id', CredentialsInterface::MARKETPLACE_ID_EBAY_GB),
     $accessTokenStore,
     $refreshTokenStore,
-    null,
+    new NullLock(),
     $sandboxHost
 );
 ```
@@ -108,11 +111,11 @@ $sellFulfillment = new SellFulfillment('app-id', 'cert-id', CredentialsInterface
 // After (2.0)
 $credentials = new ApplicationCredentials('app-id', 'cert-id', CredentialsInterface::MARKETPLACE_ID_EBAY_GB);
 $factory = new SellFulfillmentFactory();
-$sellFulfillment = $factory->create($credentials, $accessTokenStore, $refreshTokenStore, $lock);
+$sellFulfillment = $factory->create($credentials, $accessTokenStore, $refreshTokenStore, $lock); // $lock is required, use NullLock for none
 $sellFulfillment = $factory->createForHost($credentials, $accessTokenStore, $refreshTokenStore, $lock, $apiHost);
 ```
 
-`OrderServiceRegistrar` is gone, replaced by smaller `Order*Registrar` classes, and `CoreServiceRegistrar` takes an `ApplicationCredentialsInterface`. This only matters if you assembled the container yourself.
+The package now requires christianjbrown/api-client 3, oauth2-client 2.1 and key-value-store 3 (`MemoryKeyValueStore` and `FirestoreKeyValueStore` now take a PSR-20 clock). `OrderServiceRegistrar` is gone, replaced by smaller `Order*Registrar` classes, and `CoreServiceRegistrar` takes an `ApplicationCredentialsInterface`, an `ApiClientInterface`, a `RefreshTokenManagerFactoryInterface` and a required `LockInterface`. This only matters if you assembled the container yourself.
 
 ### Reading orders
 

@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace ChristianBrown\EBay\SellFulfillment;
 
+use ChristianBrown\ApiClient\ApiClientFactory;
+use ChristianBrown\ApiClient\ClientOptions;
 use ChristianBrown\EBay\SellFulfillment\Auth\ApplicationCredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHost;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
@@ -24,6 +26,8 @@ use ChristianBrown\EBay\SellFulfillment\Registrar\ShippingFulfillmentServiceRegi
 use ChristianBrown\KeyValueStore\KeyValueStoreInterface;
 use ChristianBrown\KeyValueStore\TtlAwareKeyValueStoreInterface;
 use ChristianBrown\OAuth2Client\Lock\LockInterface;
+use ChristianBrown\OAuth2Client\RefreshTokenManagerFactory;
+use Symfony\Component\Clock\NativeClock;
 
 /**
  * The composition root: builds the container from one registrar per cohesive
@@ -33,19 +37,21 @@ use ChristianBrown\OAuth2Client\Lock\LockInterface;
  */
 final class SellFulfillmentFactory implements SellFulfillmentFactoryInterface
 {
-    public function create(ApplicationCredentialsInterface $credentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, ?LockInterface $lock = null): SellFulfillmentInterface
+    public function create(ApplicationCredentialsInterface $credentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, LockInterface $lock): SellFulfillmentInterface
     {
         return $this->createForHost($credentials, $accessTokenStore, $refreshTokenStore, $lock, new ApiHost());
     }
 
-    public function createForHost(ApplicationCredentialsInterface $credentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, ?LockInterface $lock, ApiHostInterface $apiHost): SellFulfillmentInterface
+    public function createForHost(ApplicationCredentialsInterface $credentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, LockInterface $lock, ApiHostInterface $apiHost): SellFulfillmentInterface
     {
         $containerFactory = new ContainerFactory();
+        $apiClient = (new ApiClientFactory(new ClientOptions()))->create();
+        $refreshTokenManagerFactory = new RefreshTokenManagerFactory(new NativeClock());
 
         return new SellFulfillment(
             $containerFactory->build(
                 [
-                    new CoreServiceRegistrar($credentials, $accessTokenStore, $refreshTokenStore, $lock, $apiHost),
+                    new CoreServiceRegistrar($credentials, $apiClient, $refreshTokenManagerFactory, $accessTokenStore, $refreshTokenStore, $lock, $apiHost),
                     new OrderPricingTransformerRegistrar(),
                     new OrderBuyerTransformerRegistrar(),
                     new OrderCancelTransformerRegistrar(),

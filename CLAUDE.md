@@ -74,8 +74,8 @@ Layers under `src/`, mirrored 1:1 under `tests/`, plus the top-level `SellFulfil
   `$service` with a `/** @var XApiInterface $service */` docblock, then return it.
 - **`SellFulfillmentFactory`** (`src/SellFulfillmentFactory.php`) — the library's only composition root.
   `create(ApplicationCredentialsInterface, TtlAwareKeyValueStoreInterface, KeyValueStoreInterface,
-  ?LockInterface)` uses the default `ApiHost`; `createForHost(..., ApiHostInterface)` takes a custom one.
-  It builds a `ContainerBuilder` through `ContainerFactory` by running one registrar per cohesive group:
+  LockInterface)` uses the default `ApiHost`; `createForHost(..., ApiHostInterface)` takes a custom one.
+  It builds the api-client via `ApiClientFactory`, a `RefreshTokenManagerFactory` with a `NativeClock`, and a `ContainerBuilder` through `ContainerFactory` by running one registrar per cohesive group:
   `CoreServiceRegistrar` first (API client, auth, shared transformers), then the `Order*Registrar`
   classes (pricing, buyer, cancel, fulfillment instruction, line item, payment, program, result
   transformers, then serializers, then `OrderApiRegistrar`), then the shipping fulfillment, payment
@@ -95,8 +95,8 @@ Layers under `src/`, mirrored 1:1 under `tests/`, plus the top-level `SellFulfil
   eBay's token endpoint (`ApiHostInterface::getOAuthTokenUrl()`, defaulting to
   `SellFulfillmentInterface::OAUTH_TOKEN_URL`) authenticates with HTTP Basic (App ID + Cert ID) and
   **rotates the refresh token on every refresh**, so the refresh token lives in a persistent
-  `KeyValueStoreInterface` and the access token in a `TtlAwareKeyValueStoreInterface`; the optional
-  `LockInterface` serialises concurrent refreshes.
+  `KeyValueStoreInterface` and the access token in a `TtlAwareKeyValueStoreInterface`; the
+  required `LockInterface` (`NullLock` when none) serialises concurrent refreshes.
 - **`Api/`** — one `final` client per resource group (`OrderApi`, `ShippingFulfillmentApi`,
   `PaymentDisputeApi`, `PaymentDisputeEvidenceApi`). Full production URLs are still kept on the
   interface as `API_URL*` constants for backward compatibility, but requests are built from the
