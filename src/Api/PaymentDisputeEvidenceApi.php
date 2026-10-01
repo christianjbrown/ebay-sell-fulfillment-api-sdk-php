@@ -6,13 +6,12 @@ namespace ChristianBrown\EBay\SellFulfillment\Api;
 
 use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\Multipart\MultipartPart;
 use ChristianBrown\ApiClient\RequestContext;
 use ChristianBrown\ApiClient\Transformer\ArrayToJsonTransformerInterface;
-use ChristianBrown\ApiClient\Transformer\JsonToArrayTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
-use ChristianBrown\EBay\SellFulfillment\Http\MultipartFormDataBuilderInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AddEvidencePaymentDisputeRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AddEvidencePaymentDisputeResponseInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\FileEvidenceInterface;
@@ -33,18 +32,14 @@ final class PaymentDisputeEvidenceApi implements PaymentDisputeEvidenceApiInterf
     private ArrayToJsonTransformerInterface $arrayToJsonTransformer;
     private CredentialsInterface $credentials;
     private FileEvidenceTransformerInterface $fileEvidenceTransformer;
-    private JsonToArrayTransformerInterface $jsonToArrayTransformer;
-    private MultipartFormDataBuilderInterface $multipartFormDataBuilder;
     private JsonApiRequestSenderInterface $requestSender;
     private UpdateEvidencePaymentDisputeRequestSerializerInterface $updateEvidencePaymentDisputeRequestSerializer;
 
-    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $apiRequestSender, ArrayToJsonTransformerInterface $arrayToJsonTransformer, JsonToArrayTransformerInterface $jsonToArrayTransformer, MultipartFormDataBuilderInterface $multipartFormDataBuilder, AddEvidencePaymentDisputeResponseTransformerInterface $addEvidencePaymentDisputeResponseTransformer, FileEvidenceTransformerInterface $fileEvidenceTransformer, AddEvidencePaymentDisputeRequestSerializerInterface $addEvidencePaymentDisputeRequestSerializer, UpdateEvidencePaymentDisputeRequestSerializerInterface $updateEvidencePaymentDisputeRequestSerializer, CredentialsInterface $credentials, ApiHostInterface $apiHost)
+    public function __construct(JsonApiRequestSenderInterface $requestSender, ApiRequestSenderInterface $apiRequestSender, ArrayToJsonTransformerInterface $arrayToJsonTransformer, AddEvidencePaymentDisputeResponseTransformerInterface $addEvidencePaymentDisputeResponseTransformer, FileEvidenceTransformerInterface $fileEvidenceTransformer, AddEvidencePaymentDisputeRequestSerializerInterface $addEvidencePaymentDisputeRequestSerializer, UpdateEvidencePaymentDisputeRequestSerializerInterface $updateEvidencePaymentDisputeRequestSerializer, CredentialsInterface $credentials, ApiHostInterface $apiHost)
     {
         $this->requestSender = $requestSender;
         $this->apiRequestSender = $apiRequestSender;
         $this->arrayToJsonTransformer = $arrayToJsonTransformer;
-        $this->jsonToArrayTransformer = $jsonToArrayTransformer;
-        $this->multipartFormDataBuilder = $multipartFormDataBuilder;
         $this->addEvidencePaymentDisputeResponseTransformer = $addEvidencePaymentDisputeResponseTransformer;
         $this->fileEvidenceTransformer = $fileEvidenceTransformer;
         $this->addEvidencePaymentDisputeRequestSerializer = $addEvidencePaymentDisputeRequestSerializer;
@@ -92,16 +87,10 @@ final class PaymentDisputeEvidenceApi implements PaymentDisputeEvidenceApiInterf
     public function uploadEvidenceFile(string $paymentDisputeId, string $fileName, string $contentType, string $contents): FileEvidenceInterface
     {
         $url = $this->apiHost->getApizUrl().sprintf(self::API_PATH_UPLOAD_EVIDENCE_FILE_SPRINTF, $paymentDisputeId);
-        $boundary = $this->multipartFormDataBuilder->generateBoundary();
-        $body = $this->multipartFormDataBuilder->build($boundary, self::FIELD_NAME_FILE, $fileName, $contentType, $contents);
-
-        $headers = $this->credentials->toHeaders();
-        $headers[CredentialsInterface::HEADER_KEY_CONTENT_TYPE] = $this->multipartFormDataBuilder->toContentTypeHeaderValue($boundary);
-
-        // The request is multipart rather than JSON, so the body is built here
-        // and posted through the raw sender; the response is still JSON.
-        $contentsResponse = $this->apiRequestSender->post($url, [], $headers, $body);
-        $data = $this->jsonToArrayTransformer->transform($contentsResponse, new RequestContext(ApiRequestSenderInterface::METHOD_POST, $url));
+        // The one request eBay wants as multipart/form-data rather than JSON. api-client sets the
+        // multipart Content-Type and boundary, replacing the JSON one in the credential headers.
+        $file = new MultipartPart(self::FIELD_NAME_FILE, $contents, $fileName, [CredentialsInterface::HEADER_KEY_CONTENT_TYPE => $contentType]);
+        $data = $this->requestSender->postMultipart($url, [], $this->credentials->toHeaders(), [$file]);
 
         if (empty($data)) {
             throw new UnexpectedResponseException(self::UNEXPECTED_RESPONSE);

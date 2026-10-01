@@ -69,7 +69,6 @@ interface SellFulfillmentInterface
     public const string SERVICE_ISSUE_REFUND_REQUEST_SERIALIZER = 'ebay_sell_fulfillment.serializer.issue_refund_request_serializer';
     public const string SERVICE_ITEM_LOCATION_TRANSFORMER = 'ebay_sell_fulfillment.transformer.item_location_transformer';
     public const string SERVICE_JSON_API_REQUEST_SENDER = 'ebay_sell_fulfillment.json_api_request_sender';
-    public const string SERVICE_JSON_TO_ARRAY_TRANSFORMER = 'ebay_sell_fulfillment.json_to_array_transformer';
     public const string SERVICE_LEGACY_REFERENCE_SERIALIZER = 'ebay_sell_fulfillment.serializer.legacy_reference_serializer';
     public const string SERVICE_LINE_ITEM_FULFILLMENT_INSTRUCTIONS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.line_item_fulfillment_instructions_transformer';
     public const string SERVICE_LINE_ITEM_PROPERTIES_TRANSFORMER = 'ebay_sell_fulfillment.transformer.line_item_properties_transformer';
@@ -85,7 +84,6 @@ interface SellFulfillmentInterface
     public const string SERVICE_LINKED_ORDER_LINE_ITEMS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.linked_order_line_items_transformer';
     public const string SERVICE_MONETARY_TRANSACTION_TRANSFORMER = 'ebay_sell_fulfillment.transformer.monetary_transaction_transformer';
     public const string SERVICE_MONETARY_TRANSACTIONS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.monetary_transactions_transformer';
-    public const string SERVICE_MULTIPART_FORM_DATA_BUILDER = 'ebay_sell_fulfillment.http.multipart_form_data_builder';
     public const string SERVICE_NAME_VALUE_PAIR_TRANSFORMER = 'ebay_sell_fulfillment.transformer.name_value_pair_transformer';
     public const string SERVICE_NAME_VALUE_PAIRS_TRANSFORMER = 'ebay_sell_fulfillment.transformer.name_value_pairs_transformer';
     public const string SERVICE_ORDER_API = 'ebay_sell_fulfillment.api.order_api';

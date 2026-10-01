@@ -46,8 +46,6 @@ final class PaymentDisputeEvidenceServiceRegistrar implements ServiceRegistrarIn
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_JSON_API_REQUEST_SENDER),
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_API_REQUEST_SENDER),
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_ARRAY_TO_JSON_TRANSFORMER),
-                    $container->getDefinition(SellFulfillmentInterface::SERVICE_JSON_TO_ARRAY_TRANSFORMER),
-                    $container->getDefinition(SellFulfillmentInterface::SERVICE_MULTIPART_FORM_DATA_BUILDER),
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_ADD_EVIDENCE_PAYMENT_DISPUTE_RESPONSE_TRANSFORMER),
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_FILE_EVIDENCE_TRANSFORMER),
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_ADD_EVIDENCE_PAYMENT_DISPUTE_REQUEST_SERIALIZER),
