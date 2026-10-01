@@ -6,6 +6,10 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [3.0.0] - 2026-10-01
+
+A major version because `Http\MultipartFormDataBuilder` is removed and `PaymentDisputeEvidenceApi` takes fewer constructor arguments. Code that builds the client with `SellFulfillmentFactory` needs no changes.
+
 ### Changed
 
 - `uploadEvidenceFile` sends its file through api-client's `postMultipart` instead of a body built by hand. The request on the wire is the same: one `file` part with its filename and content type.
@@ -79,7 +83,8 @@ First stable release.
 Only `getOrders` had been exercised against live eBay traffic at this release. The other operations follow
 eBay's published contract.
 
-[Unreleased]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v2.0.0...HEAD
+[Unreleased]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v3.0.0...HEAD
+[3.0.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v2.0.0...v3.0.0
 [2.0.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.1.1...v2.0.0
 [1.1.1]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.0.0...v1.1.0
