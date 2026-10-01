@@ -6,6 +6,8 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-10-01
+
 ### Added
 
 - `SellFulfillmentFactory` (and `SellFulfillmentFactoryInterface`) builds a client: `create()` for eBay's production hosts, `createForHost()` for a custom `ApiHostInterface` such as the sandbox.
@@ -69,7 +71,8 @@ First stable release.
 Only `getOrders` had been exercised against live eBay traffic at this release. The other operations follow
 eBay's published contract.
 
-[Unreleased]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.1.1...HEAD
+[Unreleased]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.1.1...v2.0.0
 [1.1.1]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/christianjbrown/ebay-sell-fulfillment-api-sdk-php/releases/tag/v1.0.0
