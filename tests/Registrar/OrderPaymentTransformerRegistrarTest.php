@@ -9,7 +9,12 @@ use ChristianBrown\EBay\SellFulfillment\Auth\ApplicationCredentials;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHost;
 use ChristianBrown\EBay\SellFulfillment\Registrar\CoreServiceRegistrar;
-use ChristianBrown\EBay\SellFulfillment\Registrar\PaymentDisputeEvidenceServiceRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\OrderBuyerTransformerRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\OrderCancelTransformerRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\OrderFulfillmentInstructionTransformerRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\OrderLineItemTransformerRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\OrderPaymentTransformerRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\OrderPricingTransformerRegistrar;
 use ChristianBrown\EBay\SellFulfillment\SellFulfillmentInterface;
 use ChristianBrown\KeyValueStore\KeyValueStoreInterface;
 use ChristianBrown\KeyValueStore\TtlAwareKeyValueStoreInterface;
@@ -20,15 +25,19 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-#[CoversClass(PaymentDisputeEvidenceServiceRegistrar::class)]
+#[CoversClass(OrderPaymentTransformerRegistrar::class)]
 #[UsesClass(ApiHost::class)]
 #[UsesClass(ApplicationCredentials::class)]
 #[UsesClass(CoreServiceRegistrar::class)]
-final class PaymentDisputeEvidenceServiceRegistrarTest extends TestCase
+#[UsesClass(OrderBuyerTransformerRegistrar::class)]
+#[UsesClass(OrderCancelTransformerRegistrar::class)]
+#[UsesClass(OrderFulfillmentInstructionTransformerRegistrar::class)]
+#[UsesClass(OrderLineItemTransformerRegistrar::class)]
+#[UsesClass(OrderPricingTransformerRegistrar::class)]
+final class OrderPaymentTransformerRegistrarTest extends TestCase
 {
-    public function testRegisterWiresThePaymentDisputeEvidenceApi(): void
+    public function testRegisterWiresTheGroup(): void
     {
-        $apiHost = new ApiHost();
         $container = new ContainerBuilder();
 
         (new CoreServiceRegistrar(
@@ -38,11 +47,15 @@ final class PaymentDisputeEvidenceServiceRegistrarTest extends TestCase
             self::createStub(TtlAwareKeyValueStoreInterface::class),
             self::createStub(KeyValueStoreInterface::class),
             new NullLock(),
-            $apiHost,
+            new ApiHost(),
         ))->register($container);
+        (new OrderPricingTransformerRegistrar())->register($container);
+        (new OrderBuyerTransformerRegistrar())->register($container);
+        (new OrderCancelTransformerRegistrar())->register($container);
+        (new OrderFulfillmentInstructionTransformerRegistrar())->register($container);
+        (new OrderLineItemTransformerRegistrar())->register($container);
+        (new OrderPaymentTransformerRegistrar())->register($container);
 
-        (new PaymentDisputeEvidenceServiceRegistrar($apiHost))->register($container);
-
-        self::assertTrue($container->has(SellFulfillmentInterface::SERVICE_PAYMENT_DISPUTE_EVIDENCE_API));
+        self::assertTrue($container->has(SellFulfillmentInterface::SERVICE_PAYMENT_SUMMARY_TRANSFORMER));
     }
 }

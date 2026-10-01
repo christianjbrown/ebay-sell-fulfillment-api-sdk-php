@@ -9,6 +9,7 @@ use ChristianBrown\EBay\SellFulfillment\Auth\ApplicationCredentials;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHost;
 use ChristianBrown\EBay\SellFulfillment\Registrar\CoreServiceRegistrar;
+use ChristianBrown\EBay\SellFulfillment\Registrar\OrderPricingTransformerRegistrar;
 use ChristianBrown\EBay\SellFulfillment\SellFulfillmentInterface;
 use ChristianBrown\KeyValueStore\KeyValueStoreInterface;
 use ChristianBrown\KeyValueStore\TtlAwareKeyValueStoreInterface;
@@ -19,14 +20,17 @@ use PHPUnit\Framework\Attributes\UsesClass;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
-#[CoversClass(CoreServiceRegistrar::class)]
+#[CoversClass(OrderPricingTransformerRegistrar::class)]
 #[UsesClass(ApiHost::class)]
 #[UsesClass(ApplicationCredentials::class)]
-final class CoreServiceRegistrarTest extends TestCase
+#[UsesClass(CoreServiceRegistrar::class)]
+final class OrderPricingTransformerRegistrarTest extends TestCase
 {
-    public function testRegisterWiresAuthAndSharedTransformers(): void
+    public function testRegisterWiresTheGroup(): void
     {
-        $registrar = new CoreServiceRegistrar(
+        $container = new ContainerBuilder();
+
+        (new CoreServiceRegistrar(
             new ApplicationCredentials('test-client-id', 'test-client-secret', CredentialsInterface::MARKETPLACE_ID_EBAY_GB),
             self::createStub(ApiClientInterface::class),
             self::createStub(RefreshTokenManagerFactoryInterface::class),
@@ -34,14 +38,9 @@ final class CoreServiceRegistrarTest extends TestCase
             self::createStub(KeyValueStoreInterface::class),
             new NullLock(),
             new ApiHost(),
-        );
+        ))->register($container);
+        (new OrderPricingTransformerRegistrar())->register($container);
 
-        $container = new ContainerBuilder();
-        $registrar->register($container);
-
-        self::assertTrue($container->has(SellFulfillmentInterface::SERVICE_CREDENTIALS));
-        self::assertTrue($container->has(SellFulfillmentInterface::SERVICE_ARRAY_SHAPE_GUARD));
-        self::assertTrue($container->has(SellFulfillmentInterface::SERVICE_ERRORS_TRANSFORMER));
-        self::assertTrue($container->has(SellFulfillmentInterface::SERVICE_TRACKING_INFOS_TRANSFORMER));
+        self::assertTrue($container->has(SellFulfillmentInterface::SERVICE_PRICING_SUMMARY_TRANSFORMER));
     }
 }
