@@ -8,11 +8,9 @@ use ChristianBrown\ApiClient\ApiClientInterface;
 use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\ApiClient\Transformer\ArrayToJsonTransformer;
-use ChristianBrown\ApiClient\Transformer\JsonToArrayTransformer;
 use ChristianBrown\EBay\SellFulfillment\Auth\ApplicationCredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\Credentials;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
-use ChristianBrown\EBay\SellFulfillment\Http\MultipartFormDataBuilder;
 use ChristianBrown\EBay\SellFulfillment\SellFulfillmentInterface;
 use ChristianBrown\EBay\SellFulfillment\Transformer\ArrayShapeGuard;
 use ChristianBrown\EBay\SellFulfillment\Transformer\ErrorParametersTransformer;
@@ -73,8 +71,6 @@ final class CoreServiceRegistrar implements ServiceRegistrarInterface
             ->setFactory([new Reference(SellFulfillmentInterface::SERVICE_API_CLIENT), 'getJsonApiRequestSender']);
 
         $container->register(SellFulfillmentInterface::SERVICE_ARRAY_TO_JSON_TRANSFORMER, ArrayToJsonTransformer::class);
-        $container->register(SellFulfillmentInterface::SERVICE_JSON_TO_ARRAY_TRANSFORMER, JsonToArrayTransformer::class);
-        $container->register(SellFulfillmentInterface::SERVICE_MULTIPART_FORM_DATA_BUILDER, MultipartFormDataBuilder::class);
     }
 
     private function registerAuth(ContainerBuilder $container): void

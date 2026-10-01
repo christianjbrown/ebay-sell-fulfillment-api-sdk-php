@@ -126,8 +126,9 @@ Layers under `src/`, mirrored 1:1 under `tests/`, plus the top-level `SellFulfil
 - **`Filter/`** — `OrderFilter` renders `getOrders`' `filter` query-string value
   (`creationdate:[from..to]`, `lastmodifieddate:[..to]`, `orderfulfillmentstatus:{A|B}`), converting
   the supplied `DateTimeInterface` bounds to UTC. `MAX_HISTORY_YEARS` records eBay's two-year window.
-- **`Http/`** — `MultipartFormDataBuilder`, used only by `uploadEvidenceFile`, which is the one
-  request eBay wants as `multipart/form-data` rather than JSON (field name must be `file`).
+- **Multipart** - `uploadEvidenceFile`, the one request eBay wants as `multipart/form-data` rather
+  than JSON (field name must be `file`), sends a `MultipartPart` through api-client's
+  `postMultipart`, which builds the body and its `Content-Type`.
 - **`Exception/`** — `final` exception classes + matching interfaces, each extending the library-wide
   `ExceptionInterface` (which extends `Throwable`): `UnexpectedResponseException` (extends
   `RuntimeException`) and `MissingInputException` (extends `InvalidArgumentException`).

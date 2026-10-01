@@ -6,15 +6,14 @@ namespace ChristianBrown\EBay\SellFulfillment\Tests\Api;
 
 use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
+use ChristianBrown\ApiClient\Multipart\MultipartPart;
 use ChristianBrown\ApiClient\RequestContextInterface;
 use ChristianBrown\ApiClient\Transformer\ArrayToJsonTransformerInterface;
-use ChristianBrown\ApiClient\Transformer\JsonToArrayTransformerInterface;
 use ChristianBrown\EBay\SellFulfillment\Api\PaymentDisputeEvidenceApi;
 use ChristianBrown\EBay\SellFulfillment\Api\PaymentDisputeEvidenceApiInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Exception\UnexpectedResponseException;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
-use ChristianBrown\EBay\SellFulfillment\Http\MultipartFormDataBuilderInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AddEvidencePaymentDisputeRequestInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\AddEvidencePaymentDisputeResponseInterface;
 use ChristianBrown\EBay\SellFulfillment\Model\FileEvidenceInterface;
@@ -108,7 +107,7 @@ final class PaymentDisputeEvidenceApiTest extends TestCase
             ->with($url, [], self::headers(), '{"evidenceId":"test-evidence-id"}')
             ->willReturn('');
 
-        $api = self::buildEvidenceApi($apiRequestSender, $arrayToJsonTransformer, null, null, null, $serializer);
+        $api = self::buildEvidenceApi($apiRequestSender, $arrayToJsonTransformer, null, $serializer);
 
         $api->updateEvidence(self::DISPUTE_ID, $request);
     }
@@ -117,27 +116,11 @@ final class PaymentDisputeEvidenceApiTest extends TestCase
     {
         $fileEvidence = self::createStub(FileEvidenceInterface::class);
         $url = sprintf(PaymentDisputeEvidenceApiInterface::API_URL_UPLOAD_EVIDENCE_FILE_SPRINTF, self::DISPUTE_ID);
+        $expectedPart = new MultipartPart(PaymentDisputeEvidenceApiInterface::FIELD_NAME_FILE, 'binary-bytes', 'evidence.png', [CredentialsInterface::HEADER_KEY_CONTENT_TYPE => PaymentDisputeEvidenceApiInterface::CONTENT_TYPE_PNG]);
 
-        $multipartFormDataBuilder = self::createMock(MultipartFormDataBuilderInterface::class);
-        $multipartFormDataBuilder->expects(self::once())->method('generateBoundary')->willReturn('test-boundary');
-        $multipartFormDataBuilder->expects(self::once())->method('build')
-            ->with('test-boundary', PaymentDisputeEvidenceApiInterface::FIELD_NAME_FILE, 'evidence.png', PaymentDisputeEvidenceApiInterface::CONTENT_TYPE_PNG, 'binary-bytes')
-            ->willReturn('multipart-body');
-        $multipartFormDataBuilder->expects(self::once())->method('toContentTypeHeaderValue')
-            ->with('test-boundary')
-            ->willReturn('multipart/form-data; boundary=test-boundary');
-
-        $expectedHeaders = self::headers();
-        $expectedHeaders[CredentialsInterface::HEADER_KEY_CONTENT_TYPE] = 'multipart/form-data; boundary=test-boundary';
-
-        $apiRequestSender = self::createMock(ApiRequestSenderInterface::class);
-        $apiRequestSender->expects(self::once())->method('post')
-            ->with($url, [], $expectedHeaders, 'multipart-body')
-            ->willReturn('{"fileId":"test-file-id"}');
-
-        $jsonToArrayTransformer = self::createMock(JsonToArrayTransformerInterface::class);
-        $jsonToArrayTransformer->expects(self::once())->method('transform')
-            ->with('{"fileId":"test-file-id"}', self::isInstanceOf(RequestContextInterface::class))
+        $requestSender = self::createMock(JsonApiRequestSenderInterface::class);
+        $requestSender->expects(self::once())->method('postMultipart')
+            ->with($url, [], self::headers(), self::equalTo([$expectedPart]))
             ->willReturn(['fileId' => 'test-file-id']);
 
         $fileEvidenceTransformer = self::createMock(FileEvidenceTransformerInterface::class);
@@ -145,17 +128,17 @@ final class PaymentDisputeEvidenceApiTest extends TestCase
             ->with(['fileId' => 'test-file-id'])
             ->willReturn($fileEvidence);
 
-        $api = self::buildEvidenceApi($apiRequestSender, null, $jsonToArrayTransformer, $multipartFormDataBuilder, $fileEvidenceTransformer);
+        $api = self::buildEvidenceApi(null, null, $fileEvidenceTransformer, null, $requestSender);
 
         self::assertSame($fileEvidence, $api->uploadEvidenceFile(self::DISPUTE_ID, 'evidence.png', PaymentDisputeEvidenceApiInterface::CONTENT_TYPE_PNG, 'binary-bytes'));
     }
 
     public function testUploadEvidenceFileThrowsWhenResponseEmpty(): void
     {
-        $jsonToArrayTransformer = self::createStub(JsonToArrayTransformerInterface::class);
-        $jsonToArrayTransformer->method('transform')->willReturn([]);
+        $requestSender = self::createStub(JsonApiRequestSenderInterface::class);
+        $requestSender->method('postMultipart')->willReturn([]);
 
-        $api = self::buildEvidenceApi(null, null, $jsonToArrayTransformer);
+        $api = self::buildEvidenceApi(null, null, null, null, $requestSender);
 
         $this->expectException(UnexpectedResponseException::class);
         $this->expectExceptionMessage(PaymentDisputeEvidenceApiInterface::UNEXPECTED_RESPONSE);
@@ -171,14 +154,12 @@ final class PaymentDisputeEvidenceApiTest extends TestCase
         return $apiHost;
     }
 
-    private static function buildEvidenceApi(?ApiRequestSenderInterface $apiRequestSender = null, ?ArrayToJsonTransformerInterface $arrayToJsonTransformer = null, ?JsonToArrayTransformerInterface $jsonToArrayTransformer = null, ?MultipartFormDataBuilderInterface $multipartFormDataBuilder = null, ?FileEvidenceTransformerInterface $fileEvidenceTransformer = null, ?UpdateEvidencePaymentDisputeRequestSerializerInterface $updateEvidenceSerializer = null): PaymentDisputeEvidenceApi
+    private static function buildEvidenceApi(?ApiRequestSenderInterface $apiRequestSender = null, ?ArrayToJsonTransformerInterface $arrayToJsonTransformer = null, ?FileEvidenceTransformerInterface $fileEvidenceTransformer = null, ?UpdateEvidencePaymentDisputeRequestSerializerInterface $updateEvidenceSerializer = null, ?JsonApiRequestSenderInterface $requestSender = null): PaymentDisputeEvidenceApi
     {
         return new PaymentDisputeEvidenceApi(
-            self::createStub(JsonApiRequestSenderInterface::class),
+            $requestSender ?? self::createStub(JsonApiRequestSenderInterface::class),
             $apiRequestSender ?? self::createStub(ApiRequestSenderInterface::class),
             $arrayToJsonTransformer ?? self::createStub(ArrayToJsonTransformerInterface::class),
-            $jsonToArrayTransformer ?? self::createStub(JsonToArrayTransformerInterface::class),
-            $multipartFormDataBuilder ?? self::createStub(MultipartFormDataBuilderInterface::class),
             self::createStub(AddEvidencePaymentDisputeResponseTransformerInterface::class),
             $fileEvidenceTransformer ?? self::createStub(FileEvidenceTransformerInterface::class),
             self::createStub(AddEvidencePaymentDisputeRequestSerializerInterface::class),
@@ -194,8 +175,6 @@ final class PaymentDisputeEvidenceApiTest extends TestCase
             $requestSender,
             self::createStub(ApiRequestSenderInterface::class),
             self::createStub(ArrayToJsonTransformerInterface::class),
-            self::createStub(JsonToArrayTransformerInterface::class),
-            self::createStub(MultipartFormDataBuilderInterface::class),
             $addEvidenceTransformer ?? self::createStub(AddEvidencePaymentDisputeResponseTransformerInterface::class),
             self::createStub(FileEvidenceTransformerInterface::class),
             $addEvidenceSerializer ?? self::createStub(AddEvidencePaymentDisputeRequestSerializerInterface::class),

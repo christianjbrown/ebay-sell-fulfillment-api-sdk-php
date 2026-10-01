@@ -17,7 +17,6 @@ use ChristianBrown\EBay\SellFulfillment\Auth\Credentials;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\ContainerFactory;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHost;
-use ChristianBrown\EBay\SellFulfillment\Http\MultipartFormDataBuilder;
 use ChristianBrown\EBay\SellFulfillment\Registrar\CoreServiceRegistrar;
 use ChristianBrown\EBay\SellFulfillment\Registrar\OrderApiRegistrar;
 use ChristianBrown\EBay\SellFulfillment\Registrar\OrderBuyerTransformerRegistrar;
@@ -228,7 +227,6 @@ use PHPUnit\Framework\TestCase;
 #[UsesClass(LinkedOrderLineItemsTransformer::class)]
 #[UsesClass(MonetaryTransactionTransformer::class)]
 #[UsesClass(MonetaryTransactionsTransformer::class)]
-#[UsesClass(MultipartFormDataBuilder::class)]
 #[UsesClass(NameValuePairTransformer::class)]
 #[UsesClass(NameValuePairsTransformer::class)]
 #[UsesClass(OrderApi::class)]

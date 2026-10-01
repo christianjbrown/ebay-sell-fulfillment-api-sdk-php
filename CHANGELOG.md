@@ -6,6 +6,14 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- `uploadEvidenceFile` sends its file through api-client's `postMultipart` instead of a body built by hand. The request on the wire is the same: one `file` part with its filename and content type.
+
+### Removed
+
+- `Http\MultipartFormDataBuilder` and its interface, replaced by api-client's multipart support. `PaymentDisputeEvidenceApi` no longer takes it, or a `JsonToArrayTransformerInterface`, as constructor arguments.
+
 ## [2.0.0] - 2026-10-01
 
 ### Added

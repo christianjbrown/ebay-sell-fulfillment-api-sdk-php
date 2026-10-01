@@ -229,7 +229,7 @@ Nothing else has been run against a real account yet. Smoke-test in this order, 
 
 1. **`getOrder`** — the `fieldGroups=TAX_BREAKDOWN` variant.
 2. **`createShippingFulfillment`** — that the `201`/empty body is handled and the payload shape is accepted.
-3. **`uploadEvidenceFile`** — the hand-built `multipart/form-data` body (field name `file`), which is the only request this SDK does not encode as JSON.
+3. **`uploadEvidenceFile`**: the `multipart/form-data` body (field name `file`), which is the only request this SDK does not encode as JSON.
 4. **`fetchEvidenceContent`** — that the raw `application/octet-stream` body comes back intact.
 
 Payment dispute calls are served from `apiz.ebay.com`; order and fulfillment calls from `api.ebay.com`. Both hosts are baked into the `API_URL*` constants on the client interfaces.
