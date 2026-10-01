@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChristianBrown\EBay\SellFulfillment\Tests\Registrar;
 
+use ChristianBrown\EBay\SellFulfillment\Auth\ApplicationCredentials;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHost;
 use ChristianBrown\EBay\SellFulfillment\Registrar\CoreServiceRegistrar;
@@ -17,14 +18,13 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 #[CoversClass(CoreServiceRegistrar::class)]
 #[UsesClass(ApiHost::class)]
+#[UsesClass(ApplicationCredentials::class)]
 final class CoreServiceRegistrarTest extends TestCase
 {
     public function testRegisterWiresAuthAndSharedTransformers(): void
     {
         $registrar = new CoreServiceRegistrar(
-            'test-client-id',
-            'test-client-secret',
-            CredentialsInterface::MARKETPLACE_ID_EBAY_GB,
+            new ApplicationCredentials('test-client-id', 'test-client-secret', CredentialsInterface::MARKETPLACE_ID_EBAY_GB),
             self::createStub(TtlAwareKeyValueStoreInterface::class),
             self::createStub(KeyValueStoreInterface::class),
             null,

@@ -68,27 +68,28 @@ Layers under `src/`, mirrored 1:1 under `tests/`, plus the top-level `SellFulfil
 `ChristianBrown\EBay\SellFulfillment\` → `src/`, `ChristianBrown\EBay\SellFulfillment\Tests\` →
 `tests/`. Note the StudlyCase `EBay`.
 
-- **`SellFulfillment`** (`src/SellFulfillment.php`) — the facade, and the library's only composition
-  root. Constructed with `(string $clientId, string $clientSecret, string $marketplaceId,
-  TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore,
-  ?LockInterface $lock = null, ?ApiHostInterface $apiHost = null)`, it builds a `ContainerBuilder`
-  through `ContainerFactory` by running one `Registrar\*ServiceRegistrar` per resource group
-  (`CoreServiceRegistrar` for the API client, auth and every shared transformer; then
-  `OrderServiceRegistrar`, `ShippingFulfillmentServiceRegistrar`, `PaymentDisputeServiceRegistrar` and
-  `PaymentDisputeEvidenceServiceRegistrar`). `CoreServiceRegistrar` must run first — the others only
-  reference definitions it registers. Adding an API group means adding a registrar to that array, not
-  editing a shared method. Service ids are `SERVICE_*` constants on `SellFulfillmentInterface`.
-  Getters are PHPStan-safe: assign `$this->container->get(...)` to a local `$service` with a
-  `/** @var XApiInterface $service */` docblock, then return it.
+- **`SellFulfillment`** (`src/SellFulfillment.php`) — the facade. Its constructor takes only a PSR-11
+  `ContainerInterface` and builds nothing. Service ids are `SERVICE_*` constants on
+  `SellFulfillmentInterface`. Getters are PHPStan-safe: assign `$this->container->get(...)` to a local
+  `$service` with a `/** @var XApiInterface $service */` docblock, then return it.
+- **`SellFulfillmentFactory`** (`src/SellFulfillmentFactory.php`) — the library's only composition root.
+  `create(ApplicationCredentialsInterface, TtlAwareKeyValueStoreInterface, KeyValueStoreInterface,
+  ?LockInterface)` uses the default `ApiHost`; `createForHost(..., ApiHostInterface)` takes a custom one.
+  It builds a `ContainerBuilder` through `ContainerFactory` by running one registrar per cohesive group:
+  `CoreServiceRegistrar` first (API client, auth, shared transformers), then the `Order*Registrar`
+  classes (pricing, buyer, cancel, fulfillment instruction, line item, payment, program, result
+  transformers, then serializers, then `OrderApiRegistrar`), then the shipping fulfillment, payment
+  dispute and payment dispute evidence registrars. Registrars run in dependency order. Adding a service
+  group means adding a registrar to that array, not editing a shared method.
 - **`Registrar/`** — `ServiceRegistrarInterface` declares one method, `register(ContainerBuilder
   $container): void`. Each implementation owns one resource group's transformer chain, serializer
   chain, and its `Api` client registration; `ContainerFactory` (`src/ContainerFactory.php`) just runs
   the list of registrars it is given against a fresh `ContainerBuilder`.
 - **`Http/ApiHost`** — the injectable host. `ApiHostInterface` exposes `getApiUrl()` (order and
   shipping fulfillment), `getApizUrl()` (payment dispute) and `getOAuthTokenUrl()`, each defaulting to
-  the production host; `SellFulfillment`'s optional last constructor argument overrides it, for
+  the production host; `SellFulfillmentFactory::createForHost()` overrides it, for
   example to point at eBay's sandbox (`api.sandbox.ebay.com` / `apiz.sandbox.ebay.com`).
-- **`Auth/`** — `Credentials`, a value object over the OAuth `RefreshTokenManager`. `toHeaders()`
+- **`Auth/`** — `ApplicationCredentials` (App ID, Cert ID, marketplace id) and `Credentials`, a value object over the OAuth `RefreshTokenManager`. `toHeaders()`
   returns the four headers every request needs: `Authorization: Bearer <token>`,
   `X-EBAY-C-MARKETPLACE-ID`, `Content-Type: application/json` and `Accept: application/json`.
   eBay's token endpoint (`ApiHostInterface::getOAuthTokenUrl()`, defaulting to

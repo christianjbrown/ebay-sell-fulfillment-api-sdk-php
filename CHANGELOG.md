@@ -6,6 +6,21 @@ All notable changes to this package are recorded here. The format follows
 
 ## [Unreleased]
 
+### Added
+
+- `SellFulfillmentFactory` (and `SellFulfillmentFactoryInterface`) builds a client: `create()` for eBay's production hosts, `createForHost()` for a custom `ApiHostInterface` such as the sandbox.
+- `ApplicationCredentials` (and `ApplicationCredentialsInterface`) groups the App ID, Cert ID and marketplace id.
+
+### Changed
+
+- `SellFulfillment` now takes a single PSR-11 `ContainerInterface` and builds nothing itself. Replace `new SellFulfillment($appId, $certId, $marketplaceId, $accessStore, $refreshStore, $lock, $apiHost)` with `SellFulfillmentFactory::create()` or `createForHost()`. See "Upgrading to 2.0" in the README.
+- `CoreServiceRegistrar` takes an `ApplicationCredentialsInterface` in place of the three credential strings.
+- The order services are registered by several smaller registrars (`OrderPricingTransformerRegistrar`, `OrderBuyerTransformerRegistrar`, `OrderCancelTransformerRegistrar`, `OrderFulfillmentInstructionTransformerRegistrar`, `OrderLineItemTransformerRegistrar`, `OrderPaymentTransformerRegistrar`, `OrderProgramTransformerRegistrar`, `OrderResultTransformerRegistrar`, `OrderSerializerRegistrar`, `OrderApiRegistrar`) so a new service group is a new registrar.
+
+### Removed
+
+- `OrderServiceRegistrar`, replaced by the registrars above.
+
 ## [1.1.1] - 2026-09-30
 
 ### Changed

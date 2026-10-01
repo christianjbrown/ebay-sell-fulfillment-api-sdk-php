@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace ChristianBrown\EBay\SellFulfillment\Tests\Registrar;
 
+use ChristianBrown\EBay\SellFulfillment\Auth\ApplicationCredentials;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHost;
 use ChristianBrown\EBay\SellFulfillment\Registrar\CoreServiceRegistrar;
@@ -18,6 +19,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 #[CoversClass(PaymentDisputeEvidenceServiceRegistrar::class)]
 #[UsesClass(ApiHost::class)]
+#[UsesClass(ApplicationCredentials::class)]
 #[UsesClass(CoreServiceRegistrar::class)]
 final class PaymentDisputeEvidenceServiceRegistrarTest extends TestCase
 {
@@ -27,9 +29,7 @@ final class PaymentDisputeEvidenceServiceRegistrarTest extends TestCase
         $container = new ContainerBuilder();
 
         (new CoreServiceRegistrar(
-            'test-client-id',
-            'test-client-secret',
-            CredentialsInterface::MARKETPLACE_ID_EBAY_GB,
+            new ApplicationCredentials('test-client-id', 'test-client-secret', CredentialsInterface::MARKETPLACE_ID_EBAY_GB),
             self::createStub(TtlAwareKeyValueStoreInterface::class),
             self::createStub(KeyValueStoreInterface::class),
             null,

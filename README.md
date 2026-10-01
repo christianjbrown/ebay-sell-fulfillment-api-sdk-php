@@ -41,33 +41,30 @@ Every Sell Fulfillment request carries an **OAuth 2.0 user access token** (`Auth
 
 You need a user token minted for the `https://api.ebay.com/oauth/api_scope/sell.fulfillment.readonly` scope (or `…/sell.fulfillment` for the write endpoints). Both are on `SellFulfillmentInterface` as `OAUTH_SCOPE_SELL_FULFILLMENT_READONLY` and `OAUTH_SCOPE_SELL_FULFILLMENT`. Obtaining the first refresh token needs a one-off browser consent flow, described in eBay's [Getting user consent](https://developer.ebay.com/api-docs/static/oauth-consent-request.html) guide.
 
-You supply five things to the `SellFulfillment` entry point:
+You supply these to `SellFulfillmentFactory`, the entry point that builds a client:
 
-- your **App ID** (client id),
-- your **Cert ID** (client secret — eBay's token endpoint authenticates with HTTP Basic),
-- the **marketplace id** (`EBAY_GB`, `EBAY_US`, … — constants on `CredentialsInterface`),
-- a **`TtlAwareKeyValueStoreInterface`** to hold the current access token (an in-memory store is fine — it's re-fetched as needed),
+- an **`ApplicationCredentials`** holding your **App ID** (client id), your **Cert ID** (client secret, since eBay's token endpoint authenticates with HTTP Basic) and the **marketplace id** (`EBAY_GB`, `EBAY_US`, ... constants on `CredentialsInterface`),
+- a **`TtlAwareKeyValueStoreInterface`** to hold the current access token (an in-memory store is fine, it's re-fetched as needed),
 - a **`KeyValueStoreInterface`** holding your refresh token. This one must **persist**, because eBay rotates the refresh token on every refresh and the client writes the new value back.
 
-An optional sixth argument, a `LockInterface`, serialises the refresh across processes so a rotating refresh token is never spent by two refreshes at once. An optional seventh argument, an `ApiHostInterface`, overrides the hosts every request is built from — see [Targeting the sandbox](#targeting-the-sandbox) below.
+An optional fourth argument, a `LockInterface`, serialises the refresh across processes so a rotating refresh token is never spent by two refreshes at once. To override the hosts every request is built from, use `createForHost()` with an `ApiHostInterface`; see [Targeting the sandbox](#targeting-the-sandbox) below.
 
 ```php
+use ChristianBrown\EBay\SellFulfillment\Auth\ApplicationCredentials;
 use ChristianBrown\EBay\SellFulfillment\Auth\CredentialsInterface;
-use ChristianBrown\EBay\SellFulfillment\SellFulfillment;
+use ChristianBrown\EBay\SellFulfillment\SellFulfillmentFactory;
 use ChristianBrown\KeyValueStore\MemoryKeyValueStore;
 
 // Access token: transient, an in-memory (TTL-aware) store is fine.
 $accessTokenStore = new MemoryKeyValueStore();
 
 // Refresh token: must persist and already hold a valid refresh token.
-// Any KeyValueStoreInterface works (DatabaseKeyValueStore, GoogleSecretKeyValueStore, …).
+// Any KeyValueStoreInterface works (DatabaseKeyValueStore, GoogleSecretKeyValueStore, ...).
 $refreshTokenStore = new MemoryKeyValueStore();
 $refreshTokenStore->setValue('your-seed-refresh-token');
 
-$sellFulfillment = new SellFulfillment(
-    'your-app-id',
-    'your-cert-id',
-    CredentialsInterface::MARKETPLACE_ID_EBAY_GB,
+$sellFulfillment = (new SellFulfillmentFactory())->create(
+    new ApplicationCredentials('your-app-id', 'your-cert-id', CredentialsInterface::MARKETPLACE_ID_EBAY_GB),
     $accessTokenStore,
     $refreshTokenStore
 );
@@ -75,9 +72,11 @@ $sellFulfillment = new SellFulfillment(
 $orderApi = $sellFulfillment->getOrderApi();   // OrderApiInterface
 ```
 
+The `SellFulfillment` facade itself only takes a PSR-11 container, so it builds nothing. Everything is wired in `SellFulfillmentFactory`; to wire it differently, build your own container and pass it to `new SellFulfillment($container)`.
+
 ### Targeting the sandbox
 
-Every request is built from a host the client resolves through `ApiHostInterface`: `getApiUrl()` for order and shipping fulfillment calls (defaults to `https://api.ebay.com`), `getApizUrl()` for payment dispute calls (defaults to `https://apiz.ebay.com`), and `getOAuthTokenUrl()` for the token endpoint (defaults to `https://api.ebay.com/identity/v1/oauth2/token`). Pass a custom `ApiHost` as the seventh constructor argument to point the whole client at eBay's sandbox — `https://api.sandbox.ebay.com` and `https://apiz.sandbox.ebay.com`:
+Every request is built from a host the client resolves through `ApiHostInterface`: `getApiUrl()` for order and shipping fulfillment calls (defaults to `https://api.ebay.com`), `getApizUrl()` for payment dispute calls (defaults to `https://apiz.ebay.com`), and `getOAuthTokenUrl()` for the token endpoint (defaults to `https://api.ebay.com/identity/v1/oauth2/token`). Pass a custom `ApiHost` to `createForHost()` to point the whole client at eBay's sandbox — `https://api.sandbox.ebay.com` and `https://apiz.sandbox.ebay.com`:
 
 ```php
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHost;
@@ -88,16 +87,32 @@ $sandboxHost = new ApiHost(
     'https://api.sandbox.ebay.com/identity/v1/oauth2/token'
 );
 
-$sellFulfillment = new SellFulfillment(
-    'your-sandbox-app-id',
-    'your-sandbox-cert-id',
-    CredentialsInterface::MARKETPLACE_ID_EBAY_GB,
+$sellFulfillment = (new SellFulfillmentFactory())->createForHost(
+    new ApplicationCredentials('your-sandbox-app-id', 'your-sandbox-cert-id', CredentialsInterface::MARKETPLACE_ID_EBAY_GB),
     $accessTokenStore,
     $refreshTokenStore,
     null,
     $sandboxHost
 );
 ```
+
+
+### Upgrading to 2.0
+
+`SellFulfillment` no longer builds its own wiring. Construct it through `SellFulfillmentFactory`, and group the App ID, Cert ID and marketplace into an `ApplicationCredentials`.
+
+```php
+// Before (1.x)
+$sellFulfillment = new SellFulfillment('app-id', 'cert-id', CredentialsInterface::MARKETPLACE_ID_EBAY_GB, $accessTokenStore, $refreshTokenStore, $lock, $apiHost);
+
+// After (2.0)
+$credentials = new ApplicationCredentials('app-id', 'cert-id', CredentialsInterface::MARKETPLACE_ID_EBAY_GB);
+$factory = new SellFulfillmentFactory();
+$sellFulfillment = $factory->create($credentials, $accessTokenStore, $refreshTokenStore, $lock);
+$sellFulfillment = $factory->createForHost($credentials, $accessTokenStore, $refreshTokenStore, $lock, $apiHost);
+```
+
+`OrderServiceRegistrar` is gone, replaced by smaller `Order*Registrar` classes, and `CoreServiceRegistrar` takes an `ApplicationCredentialsInterface`. This only matters if you assembled the container yourself.
 
 ### Reading orders
 

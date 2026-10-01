@@ -9,6 +9,7 @@ use ChristianBrown\ApiClient\ApiRequestSenderInterface;
 use ChristianBrown\ApiClient\JsonApiRequestSenderInterface;
 use ChristianBrown\ApiClient\Transformer\ArrayToJsonTransformer;
 use ChristianBrown\ApiClient\Transformer\JsonToArrayTransformer;
+use ChristianBrown\EBay\SellFulfillment\Auth\ApplicationCredentialsInterface;
 use ChristianBrown\EBay\SellFulfillment\Auth\Credentials;
 use ChristianBrown\EBay\SellFulfillment\Http\ApiHostInterface;
 use ChristianBrown\EBay\SellFulfillment\Http\MultipartFormDataBuilder;
@@ -38,17 +39,13 @@ final class CoreServiceRegistrar implements ServiceRegistrarInterface
 {
     private TtlAwareKeyValueStoreInterface $accessTokenStore;
     private ApiHostInterface $apiHost;
-    private string $clientId;
-    private string $clientSecret;
+    private ApplicationCredentialsInterface $applicationCredentials;
     private ?LockInterface $lock;
-    private string $marketplaceId;
     private KeyValueStoreInterface $refreshTokenStore;
 
-    public function __construct(string $clientId, string $clientSecret, string $marketplaceId, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, ?LockInterface $lock, ApiHostInterface $apiHost)
+    public function __construct(ApplicationCredentialsInterface $applicationCredentials, TtlAwareKeyValueStoreInterface $accessTokenStore, KeyValueStoreInterface $refreshTokenStore, ?LockInterface $lock, ApiHostInterface $apiHost)
     {
-        $this->clientId = $clientId;
-        $this->clientSecret = $clientSecret;
-        $this->marketplaceId = $marketplaceId;
+        $this->applicationCredentials = $applicationCredentials;
         $this->accessTokenStore = $accessTokenStore;
         $this->refreshTokenStore = $refreshTokenStore;
         $this->lock = $lock;
@@ -90,7 +87,7 @@ final class CoreServiceRegistrar implements ServiceRegistrarInterface
                     $this->refreshTokenStore,
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_ACCESS_TOKEN_TRANSFORMER),
                     $this->apiHost->getOAuthTokenUrl(),
-                    $this->clientSecret,
+                    $this->applicationCredentials->getClientSecret(),
                     $this->lock,
                 ]
             );
@@ -99,8 +96,8 @@ final class CoreServiceRegistrar implements ServiceRegistrarInterface
             ->setArguments(
                 [
                     $container->getDefinition(SellFulfillmentInterface::SERVICE_REFRESH_TOKEN_MANAGER),
-                    $this->clientId,
-                    $this->marketplaceId,
+                    $this->applicationCredentials->getClientId(),
+                    $this->applicationCredentials->getMarketplaceId(),
                 ]
             );
     }
